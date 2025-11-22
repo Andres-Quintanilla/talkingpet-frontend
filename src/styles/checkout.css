@@ -1,0 +1,109 @@
+/* src/styles/checkout.css */
+
+.checkout-section {
+  padding: 3rem 0;
+  background-color: var(--color-bg-alt);
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 992px) {
+  .checkout-summary {
+    order: -1; /* Muestra el resumen primero en móvil */
+  }
+}
+@media (min-width: 992px) {
+    .checkout-layout {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+
+.checkout-form {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 2rem;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+}
+
+.checkout-payment-methods {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Resumen del Checkout */
+.checkout-summary {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.checkout-summary h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1rem;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1rem;
+}
+.summary-item:last-of-type {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+
+.summary-item__image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.summary-item__details {
+  flex-grow: 1;
+}
+
+.summary-item__name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.summary-item__price {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
+
+.summary-item__total {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-left: auto;
+}

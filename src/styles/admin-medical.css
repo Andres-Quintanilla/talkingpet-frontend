@@ -1,0 +1,447 @@
+/* ========================================
+   ADMIN MEDICAL MANAGEMENT
+   ======================================== */
+
+.admin-medical-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.admin-medical {
+  padding: var(--space-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.admin-medical__header {
+  margin-bottom: var(--space-2xl);
+}
+
+.admin-medical__title {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-xl) 0;
+}
+
+/* Grid de estadísticas */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.admin-stat-card {
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--color-primary);
+  transition: width var(--transition-fast);
+}
+
+.admin-stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.admin-stat-card:hover::before {
+  width: 100%;
+  opacity: 0.1;
+}
+
+.admin-stat-card--primary::before {
+  background: var(--color-primary);
+}
+
+.admin-stat-card--warning::before {
+  background: #f39c12;
+}
+
+.admin-stat-card--success::before {
+  background: #27ae60;
+}
+
+.admin-stat-card--info::before {
+  background: #3498db;
+}
+
+.admin-stat-card__icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+
+.admin-stat-card__content {
+  flex: 1;
+}
+
+.admin-stat-card__value {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+  margin-bottom: var(--space-xs);
+}
+
+.admin-stat-card__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  font-weight: 600;
+}
+
+/* Acciones rápidas */
+.admin-medical__actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+/* Filtros */
+.admin-medical__filters {
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  background: transparent;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.filter-tab:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(220, 34, 104, 0.05);
+}
+
+.filter-tab--active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+/* Búsqueda */
+.search-box {
+  position: relative;
+  min-width: 300px;
+}
+
+.search-box__input {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  padding-right: calc(var(--space-md) + 30px);
+  font-size: var(--font-size-base);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: all var(--transition-fast);
+}
+
+.search-box__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(220, 34, 104, 0.1);
+}
+
+.search-box__icon {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  pointer-events: none;
+}
+
+/* Contenido */
+.admin-medical__content {
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.admin-empty-state {
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--color-text-light);
+}
+
+/* Tabla de mascotas */
+.mascotas-table-wrapper {
+  overflow-x: auto;
+}
+
+.mascotas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.mascotas-table thead {
+  background: var(--color-bg-alt);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mascotas-table th {
+  padding: var(--space-md);
+  text-align: left;
+  font-weight: 700;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.mascotas-table td {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.mascotas-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.mascotas-table tbody tr:hover {
+  background: var(--color-bg-alt);
+}
+
+.mascotas-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Celdas especiales */
+.mascota-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.mascota-cell__icon {
+  font-size: 1.5rem;
+}
+
+.mascota-cell__name {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.mascota-species {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.mascota-species__raza {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
+}
+
+/* Badges */
+.alert-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  padding: 0 var(--space-sm);
+}
+
+.alert-badge--success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.alert-badge--warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.alert-badge--danger {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.vaccine-warning {
+  color: #f39c12;
+  font-weight: 700;
+  margin-left: var(--space-xs);
+}
+
+/* Estado de salud */
+.estado-salud {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+.estado-salud--excelente {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estado-salud--bueno {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.estado-salud--atencion {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.estado-salud--critico {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Acciones de fila */
+.actions-cell {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+/* Resumen */
+.admin-medical__summary {
+  margin-top: var(--space-xl);
+  text-align: center;
+  color: var(--color-text-light);
+  font-size: var(--font-size-sm);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-medical__filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    min-width: 100%;
+  }
+
+  .mascotas-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .mascotas-table th,
+  .mascotas-table td {
+    padding: var(--space-sm);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-medical {
+    padding: var(--space-md);
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-card__icon {
+    font-size: 2rem;
+  }
+
+  .admin-stat-card__value {
+    font-size: var(--font-size-2xl);
+  }
+
+  .filter-tabs {
+    width: 100%;
+  }
+
+  .filter-tab {
+    flex: 1;
+    text-align: center;
+  }
+
+  .mascotas-table-wrapper {
+    overflow-x: scroll;
+  }
+
+  .mascotas-table {
+    min-width: 1000px;
+  }
+
+  .actions-cell .btn {
+    font-size: var(--font-size-xs);
+    padding: var(--space-xs);
+  }
+}
+
+/* Dark theme overrides */
+:root[data-theme="dark"] .admin-stat-card,
+:root[data-theme="dark"] .admin-medical__filters,
+:root[data-theme="dark"] .admin-medical__content {
+  background-color: #171717;
+  border-color: var(--color-border);
+}
+
+:root[data-theme="dark"] .mascotas-table thead {
+  background-color: var(--color-bg-alt);
+}
+
+:root[data-theme="dark"] .search-box__input {
+  background-color: #171717;
+}
+
+:root[data-theme="dark"] .filter-tab:hover {
+  background: rgba(230, 58, 122, 0.1);
+}

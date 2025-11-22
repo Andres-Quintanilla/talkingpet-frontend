@@ -1,0 +1,159 @@
+/* ===== Header de página dentro de admin-main ===== */
+.admin-main__header {
+  margin-bottom: var(--space-xl);
+}
+
+.admin-main__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.admin-main__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+}
+
+/* ===== Dashboard Admin ===== */
+
+.admin-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xl);
+  padding: var(--space-2xl) 0;
+}
+
+.admin-dashboard__loading,
+.admin-dashboard__error {
+  margin-top: var(--space-xl);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.admin-dashboard__loading {
+  background: var(--color-bg-alt);
+  color: var(--color-text-light);
+}
+
+.admin-dashboard__error {
+  background: #ffe5e5;
+  color: #b00020;
+}
+
+/* KPIs (tarjetas de resumen) */
+
+.admin-kpi-grid {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.admin-kpi-card {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+:root[data-theme="dark"] .admin-kpi-card {
+  background: var(--color-bg-alt);
+}
+
+.admin-kpi-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+  margin-bottom: var(--space-xs);
+}
+
+.admin-kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.admin-kpi-sub {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
+}
+
+/* Grid inferior: pedidos / citas */
+
+.admin-dashboard__grid {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+@media (min-width: 992px) {
+  .admin-dashboard__grid {
+    grid-template-columns: 1.5fr 1.5fr;
+    align-items: flex-start;
+  }
+}
+
+.admin-panel {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+:root[data-theme="dark"] .admin-panel {
+  background: var(--color-bg-alt);
+}
+
+.admin-panel__header {
+  margin-bottom: var(--space-md);
+}
+
+.admin-panel__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.admin-panel__subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+}
+
+.admin-panel__empty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+}
+
+.admin-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.admin-panel__list-item {
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-panel__list-item:last-child {
+  border-bottom: none;
+}
+
+.admin-panel__list-primary {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.admin-panel__list-secondary {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-light);
+}

@@ -1,0 +1,1 @@
+export default function MyOrders() { return ( <div className="container" style={{padding: '2rem 1rem'}}><h1>Mis Pedidos (Cliente)</h1></div> ); }

@@ -1,0 +1,109 @@
+/* src/styles/footer.css */
+.footer {
+  background: var(--color-bg-alt);
+  color: var(--color-text-light);
+  padding: var(--space-3xl) 0 var(--space-xl);
+  margin-top: auto;
+  border-top: 1px solid var(--color-border);
+}
+:root[data-theme="dark"] .footer {
+  background: #101010;
+}
+
+.footer__grid {
+  display: grid;
+  gap: var(--space-2xl);
+  margin-bottom: var(--space-2xl);
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .footer__grid {
+    grid-template-columns: repeat(3, 1fr);
+    text-align: left;
+  }
+}
+
+.footer__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.footer__title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.footer__address p {
+  margin: 0;
+}
+
+.footer__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.footer__link {
+  color: var(--color-text-light);
+  transition: color var(--transition-fast);
+}
+.footer__link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.footer__social {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+@media (min-width: 768px) {
+  .footer__social {
+    justify-content: flex-start;
+  }
+}
+
+.pill {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-full);
+  color: var(--color-text);
+  transition: all var(--transition-fast);
+}
+:root[data-theme="dark"] .pill {
+  background: var(--color-bg-alt);
+  border-color: var(--color-border);
+}
+
+.footer__social-link:hover .pill {
+  background: var(--color-primary);
+  color: var(--color-text-inverted);
+  border-color: var(--color-primary);
+}
+
+.footer__bottom {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-xl);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-light);
+}
+@media (min-width: 768px) {
+  .footer__bottom {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.footer__legal {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+}
