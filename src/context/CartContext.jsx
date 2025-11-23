@@ -1,47 +1,92 @@
+// src/context/CartContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { formatCurrency } from '../utils/format';
+import { useAuth } from './AuthContext';
 
 const CartCtx = createContext();
 
 export const CartProvider = ({ children }) => {
-    const [items, setItems] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('tp_cart') || '[]'); }
-        catch { return []; }
+  const { user } = useAuth();
+
+  // Clave de storage por usuario (si no hay usuario, carrito anónimo)
+  const storageKey = user?.id ? `tp_cart_user_${user.id}` : 'tp_cart_anon';
+
+  const [items, setItems] = useState([]);
+
+  // Cargar carrito desde localStorage cuando cambia el usuario / storageKey
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+
+      if (raw) {
+        const parsed = JSON.parse(raw);
+
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+          return;
+        }
+      }
+
+      // Si no hay nada guardado o está mal, dejamos carrito vacío
+      setItems([]);
+    } catch (err) {
+      console.error('Error leyendo carrito de localStorage:', err);
+      setItems([]);
+    }
+  }, [storageKey]);
+
+  // Guardar carrito cuando cambian los items
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    } catch (err) {
+      console.error('Error guardando carrito en localStorage:', err);
+    }
+  }, [items, storageKey]);
+
+  // === Mantengo tu misma API ===
+
+  // p: producto completo que ya usas en el proyecto (id, nombre, precio, imagen_url, etc.)
+  const add = (p, qty = 1) => {
+    setItems((prev) => {
+      const i = prev.findIndex((x) => x.id === p.id);
+      if (i >= 0) {
+        const copy = [...prev];
+        copy[i].qty += qty;
+        return copy;
+      }
+      return [...prev, { ...p, qty }];
     });
+  };
 
-    useEffect(() => {
-        localStorage.setItem('tp_cart', JSON.stringify(items));
-    }, [items]);
+  const remove = (id) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+  };
 
-    const add = (p, qty = 1) => {
-        setItems((prev) => {
-            const i = prev.findIndex(x => x.id === p.id);
-            if (i >= 0) {
-                const copy = [...prev];
-                copy[i].qty += qty;
-                return copy;
-            }
-            return [...prev, { ...p, qty }];
-        });
-    };
+  const clear = () => setItems([]);
 
-    const remove = (id) => setItems(items.filter(i => i.id !== id));
-    const clear = () => setItems([]);
-    const setQty = (id, qty) => {
-        if (qty <= 0) return remove(id);
-        setItems(items.map(i => i.id === id ? { ...i, qty } : i));
-    };
-
-    const totals = useMemo(() => {
-        const total = items.reduce((s, i) => s + i.precio * i.qty, 0);
-        return { total, totalLabel: formatCurrency(total), count: items.length };
-    }, [items]);
-
-    return (
-        <CartCtx.Provider value={{ items, add, remove, clear, setQty, totals }}>
-            {children}
-        </CartCtx.Provider>
+  const setQty = (id, qty) => {
+    if (qty <= 0) return remove(id);
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, qty } : i))
     );
+  };
+
+  const totals = useMemo(() => {
+    const total = items.reduce((s, i) => s + (i.precio || 0) * (i.qty || 1), 0);
+    // count = número de líneas, igual que antes
+    return {
+      total,
+      totalLabel: formatCurrency(total),
+      count: items.length,
+    };
+  }, [items]);
+
+  return (
+    <CartCtx.Provider value={{ items, add, remove, clear, setQty, totals }}>
+      {children}
+    </CartCtx.Provider>
+  );
 };
 
 export const useCart = () => useContext(CartCtx);

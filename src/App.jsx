@@ -1,3 +1,4 @@
+// src/App.jsx
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -17,13 +18,13 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
-// --- Páginas de Carrito y Pago ---
+// --- Carrito / Pago ---
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentCancel from './pages/PaymentCancel';
 
-// --- Páginas de Usuario Logueado (Cliente) ---
+// --- Cliente Autenticado ---
 import { RequireAuth, RequireRole } from './components/RouteGuards';
 import Booking from './pages/Booking';
 import MyCourses from './pages/MyCourses';
@@ -34,7 +35,7 @@ import PetProfile from './pages/PetProfile';
 import MyOrders from './pages/MyOrders';
 import MyBookings from './pages/MyBookings';
 
-// --- Páginas de Admin ---
+// --- Admin ---
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -46,16 +47,23 @@ import AdminBookings from './pages/admin/AdminBookings';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminMedical from './pages/admin/AdminMedical';
 
-// --- Páginas de Empleado ---
+// --- Empleado ---
 import EmployeeLayout from './pages/employee/EmployeeLayout';
 import EmployeeDashboard from './pages/employee/EmployeeDashboard';
 import EmployeeBookings from './pages/employee/EmployeeBookings';
 import EmployeeMedical from './pages/employee/EmployeeMedical';
 
+// CRUD catálogo empleado
+import EmployeeProducts from './pages/employee/EmployeeProducts';
+import EmployeeServices from './pages/employee/EmployeeServices';
+import EmployeeCourses from './pages/employee/EmployeeCourses';
+
+// Adiestramiento empleado
+import EmployeeTraining from './pages/employee/EmployeeTraining';
+
 export default function App() {
   const location = useLocation();
 
-  // Oculta Header/Footer en Login, Admin, Empleado y Visor de Cursos
   const hideChrome =
     [
       '/login',
@@ -109,7 +117,7 @@ export default function App() {
           />
 
           {/* ======================= */}
-          {/* === Rutas de Cliente === */}
+          {/* === Cliente Auth === */}
           {/* ======================= */}
           <Route
             path="/agendar"
@@ -177,9 +185,10 @@ export default function App() {
           />
 
           {/* ======================= */}
-          {/* === Rutas de Admin === */}
+          {/* ===== ADMIN AREA ===== */}
           {/* ======================= */}
           <Route path="/admin/login" element={<AdminLogin />} />
+
           <Route
             path="/admin"
             element={
@@ -200,24 +209,41 @@ export default function App() {
           </Route>
 
           {/* ======================= */}
-          {/* === Rutas de Empleado === */}
+          {/* ==== EMPLEADO AREA ==== */}
           {/* ======================= */}
           <Route
             path="/empleado"
             element={
-              <RequireRole roles={['empleado', 'admin']}>
+              <RequireRole
+                roles={[
+                  'empleado',
+                  'admin',
+                  'empleado_peluquero',
+                  'empleado_veterinario',
+                  'empleado_adiestrador',
+                ]}
+              >
                 <EmployeeLayout />
               </RequireRole>
             }
           >
             <Route index element={<Navigate to="dashboard" replace />} />
+
             <Route path="dashboard" element={<EmployeeDashboard />} />
             <Route path="citas" element={<EmployeeBookings />} />
             <Route path="medical" element={<EmployeeMedical />} />
+
+            {/* Catálogo (empleado) */}
+            <Route path="productos" element={<EmployeeProducts />} />
+            <Route path="servicios" element={<EmployeeServices />} />
+            <Route path="cursos" element={<EmployeeCourses />} />
+
+            {/* Adiestramiento */}
+            <Route path="adiestramiento" element={<EmployeeTraining />} />
           </Route>
 
           {/* ======================= */}
-          {/* === 404 y Redirects === */}
+          {/* ======== 404 ========= */}
           {/* ======================= */}
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/404" replace />} />

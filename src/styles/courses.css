@@ -11,6 +11,12 @@
   gap: var(--space-xl);
 }
 
+.courses-page {
+  padding: var(--space-3xl) 0;
+  background: var(--color-bg-alt);
+  min-height: 70svh; /* igual que products/services */
+}
+
 @media (min-width: 768px) {
   .courses-grid {
     grid-template-columns: repeat(2, 1fr);

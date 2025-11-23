@@ -5,6 +5,9 @@ import {
   CalendarDays,
   HeartPulse,
   PlayCircle,
+  Package,
+  Cog,
+  GraduationCap,
   LogOut,
 } from 'lucide-react';
 
@@ -61,7 +64,7 @@ export default function EmployeeLayout() {
             }
           >
             <HeartPulse size={18} />
-            <span>Historial Médico</span>
+            <span>Historial médico</span>
           </NavLink>
 
           <NavLink
@@ -74,6 +77,45 @@ export default function EmployeeLayout() {
           >
             <PlayCircle size={18} />
             <span>Adiestramiento</span>
+          </NavLink>
+
+          {/* CRUD manejado por empleados */}
+          <div className="admin-sidebar__section-title">Catálogo</div>
+
+          <NavLink
+            to="productos"
+            className={({ isActive }) =>
+              isActive
+                ? 'admin-sidebar__link admin-sidebar__link--active'
+                : 'admin-sidebar__link'
+            }
+          >
+            <Package size={18} />
+            <span>Productos</span>
+          </NavLink>
+
+          <NavLink
+            to="servicios"
+            className={({ isActive }) =>
+              isActive
+                ? 'admin-sidebar__link admin-sidebar__link--active'
+                : 'admin-sidebar__link'
+            }
+          >
+            <Cog size={18} />
+            <span>Servicios</span>
+          </NavLink>
+
+          <NavLink
+            to="cursos"
+            className={({ isActive }) =>
+              isActive
+                ? 'admin-sidebar__link admin-sidebar__link--active'
+                : 'admin-sidebar__link'
+            }
+          >
+            <GraduationCap size={18} />
+            <span>Cursos</span>
           </NavLink>
         </nav>
 
