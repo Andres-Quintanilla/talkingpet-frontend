@@ -2,6 +2,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import StripePayment from '../components/StripePayment';
+import QrPayment from '../components/QrPayment';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -17,6 +19,8 @@ export default function Checkout() {
   const [direccionEnvio, setDireccionEnvio] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [createdOrderId, setCreatedOrderId] = useState(null);
+  const [showStripePayment, setShowStripePayment] = useState(false);
 
   // Dirección habitual guardada (Booking)
   const [savedAddress, setSavedAddress] = useState(null);
@@ -69,6 +73,15 @@ export default function Checkout() {
     loadSavedAddress();
   }, []);
 
+  const handlePaymentSuccess = () => {
+    clear();
+    navigate('/pago/exitoso', { state: { orderId: createdOrderId } });
+  };
+
+  const handlePaymentError = (errorMsg) => {
+    setError(errorMsg);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -108,10 +121,18 @@ export default function Checkout() {
         direccion_envio: soloCursos ? null : direccionEnvio || null,
       };
 
-      const { data } = await api.post('/api/orders/checkout', payload);
+      const { data } = await api.post('/api/orders', payload);
 
+      // Si el método de pago es tarjeta o QR, mostrar el componente correspondiente
+      if (metodoPago === 'tarjeta' || metodoPago === 'qr') {
+        setCreatedOrderId(data?.id);
+        setShowStripePayment(metodoPago === 'tarjeta');
+        return;
+      }
+
+      // Para otros métodos de pago (efectivo), redirigir directamente
       clear();
-      navigate('/mis-pedidos', { state: { orderId: data?.order?.id } });
+      navigate('/mis-pedidos', { state: { orderId: data?.id } });
     } catch (err) {
       console.error('Error creando pedido:', err);
       setError(
@@ -374,6 +395,29 @@ export default function Checkout() {
                   </select>
                 </div>
 
+                {/* Mostrar el componente de Stripe si se seleccionó tarjeta y ya se creó la orden */}
+                {metodoPago === 'tarjeta' && showStripePayment && createdOrderId && (
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <StripePayment
+                      orderId={createdOrderId}
+                      total={total}
+                      onError={handlePaymentError}
+                    />
+                  </div>
+                )}
+
+                {/* Mostrar el componente de QR si se seleccionó QR y ya se creó la orden */}
+                {metodoPago === 'qr' && createdOrderId && (
+                  <div style={{ marginTop: '1.5rem' }}>
+                    <QrPayment
+                      orderId={createdOrderId}
+                      total={total}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                    />
+                  </div>
+                )}
+
                 {tieneServicios && (
                   <p className="form-note">
                     Para servicios, la confirmación final se realizará por
@@ -383,13 +427,19 @@ export default function Checkout() {
               </fieldset>
 
               <div className="form-actions">
-                <button
-                  type="submit"
-                  className="btn btn--primary btn--full"
-                  disabled={loading || items.length === 0}
-                >
-                  {loading ? 'Procesando...' : 'Confirmar pedido'}
-                </button>
+                {/* Si ya se creó la orden y se mostró el pago, no mostrar el botón de confirmar */}
+                {!createdOrderId && (
+                  <button
+                    type="submit"
+                    className="btn btn--primary btn--full"
+                    disabled={loading || items.length === 0}
+                  >
+                    {loading ? 'Procesando...' : 
+                     metodoPago === 'tarjeta' ? 'Continuar al pago con tarjeta' : 
+                     metodoPago === 'qr' ? 'Continuar al pago con QR' : 
+                     'Confirmar pedido'}
+                  </button>
+                )}
 
                 <Link to="/carrito" className="btn btn--secondary">
                   Volver al carrito
