@@ -1,0 +1,821 @@
+/* Cartilla de Vacunación - Diseño Moderno y Profesional */
+
+.vaccination-card-container {
+  margin: 0 auto;
+  padding: 30px;
+
+}
+
+/* Estados de carga y error */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #667eea;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container i {
+  font-size: 5rem;
+  color: #e74c3c;
+  margin-bottom: 20px;
+}
+
+/* Header de Mascota */
+.pet-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.pet-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.btn-back {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateX(-5px);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.pet-info-header {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+.pet-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+  font-size: 3.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 5px solid rgba(255, 255, 255, 0.3);
+}
+
+.pet-details h1 {
+  margin: 0 0 12px 0;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.pet-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.pet-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.pet-meta strong {
+  font-weight: 600;
+}
+
+/* Tabs de navegación */
+.tabs-navigation {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  background: white;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 18px 25px;
+  border: 2px solid transparent;
+  background: transparent;
+  color: #7f8c8d;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.tab-btn:hover {
+  background: #f8f9fa;
+  color: #667eea;
+  transform: translateY(-2px);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  transform: translateY(-3px);
+}
+
+.tab-btn i {
+  font-size: 1.3rem;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 0;
+  margin-bottom: 30px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+}
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px 30px;
+  border-bottom: none;
+}
+
+.card-header.alert-header {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.card-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.card-header .subtitle {
+  margin: 5px 0 0 0;
+  opacity: 0.95;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.card-body {
+  padding: 30px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #95a5a6;
+  padding: 60px 20px;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+/* Grid de Vacunas */
+.vacunas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+.vacuna-card {
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 25px;
+  border: 2px solid #e9ecef;
+  border-left: 6px solid #95a5a6;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.vacuna-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+}
+
+.vacuna-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: #667eea;
+}
+
+.vacuna-card.aplicada {
+  border-left-color: #27ae60;
+  background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+}
+
+.vacuna-card.aplicada::before {
+  background: radial-gradient(circle, rgba(39, 174, 96, 0.1) 0%, transparent 70%);
+}
+
+.vacuna-card.vencida {
+  border-left-color: #e74c3c;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+.vacuna-card.vencida::before {
+  background: radial-gradient(circle, rgba(231, 76, 60, 0.1) 0%, transparent 70%);
+}
+
+.vacuna-card.proxima {
+  border-left-color: #f39c12;
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+}
+
+.vacuna-card.proxima::before {
+  background: radial-gradient(circle, rgba(243, 156, 18, 0.1) 0%, transparent 70%);
+}
+
+.vacuna-card.pendiente {
+  border-left-color: #95a5a6;
+  background: #fafafa;
+}
+
+.vacuna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.vacuna-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.vacuna-body p {
+  margin: 10px 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.vacuna-body p strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* Badges mejorados */
+.badge {
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.badge-success {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+}
+
+.badge-danger {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+}
+
+.badge-warning {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+}
+
+.badge-secondary {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: white;
+}
+
+/* Lista de Vacunas (otras vacunas) */
+.vacunas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vacuna-item {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 25px;
+  border-left: 5px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.vacuna-item:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transform: translateX(5px);
+}
+
+.vacuna-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.vacuna-item-header h4 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.vacuna-item-details p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.vacuna-item-details .observaciones {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #e9ecef;
+  font-style: italic;
+  color: #7f8c8d;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+/* Alergias */
+.alergias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.alergia-item {
+  display: flex;
+  gap: 20px;
+  padding: 25px;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+  border-radius: 15px;
+  border-left: 5px solid #e74c3c;
+  transition: all 0.3s ease;
+}
+
+.alergia-item:hover {
+  box-shadow: 0 10px 30px rgba(231, 76, 60, 0.2);
+  transform: scale(1.02);
+}
+
+.alergia-item.severidad-alta {
+  border-left-color: #c0392b;
+  background: linear-gradient(135deg, #fff0f0 0%, #ffffff 100%);
+}
+
+.alergia-item.severidad-media {
+  border-left-color: #e67e22;
+  background: linear-gradient(135deg, #fff8f0 0%, #ffffff 100%);
+}
+
+.alergia-item.severidad-leve {
+  border-left-color: #f39c12;
+  background: linear-gradient(135deg, #fffbf0 0%, #ffffff 100%);
+}
+
+.alergia-icon {
+  font-size: 2.5rem;
+  color: #e74c3c;
+  flex-shrink: 0;
+}
+
+.alergia-info h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.alergia-info p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.alergia-info .severidad {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.alergia-info .severidad.alta {
+  background: #e74c3c;
+  color: white;
+}
+
+.alergia-info .severidad.media {
+  background: #e67e22;
+  color: white;
+}
+
+.alergia-info .severidad.leve {
+  background: #f39c12;
+  color: white;
+}
+
+.fecha-small {
+  font-size: 0.85rem;
+  color: #95a5a6;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* Medicamentos */
+.medicamentos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.medicamento-item {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  border-radius: 15px;
+  padding: 25px;
+  border-left: 5px solid #3498db;
+  transition: all 0.3s ease;
+}
+
+.medicamento-item:hover {
+  box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2);
+  transform: translateX(5px);
+}
+
+.medicamento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.medicamento-header h4 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.medicamento-details p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.medicamento-details .indicaciones {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #d1e7f5;
+  font-style: italic;
+  color: #7f8c8d;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.text-muted {
+  color: #95a5a6 !important;
+  font-size: 0.9rem;
+}
+
+/* Timeline de Consultas */
+.consultas-timeline {
+  position: relative;
+  padding-left: 60px;
+}
+
+.consultas-timeline::before {
+  content: '';
+  position: absolute;
+  left: 30px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #667eea, #764ba2);
+  border-radius: 3px;
+}
+
+.consulta-item {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 35px;
+  position: relative;
+}
+
+.consulta-date {
+  position: absolute;
+  left: 0;
+  width: 60px;
+}
+
+.date-badge {
+  background: white;
+  border: 4px solid #667eea;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #667eea;
+  font-size: 1.4rem;
+  line-height: 1;
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.date-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.date-badge span {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+.consulta-content {
+  flex: 1;
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  border-left: 5px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.consulta-content:hover {
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+  transform: translateX(5px);
+}
+
+.consulta-header h4 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.consulta-header .veterinario {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.consulta-details {
+  margin-top: 18px;
+}
+
+.consulta-details p {
+  margin: 10px 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.consulta-details .observaciones {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid #e9ecef;
+  font-style: italic;
+  color: #7f8c8d;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+/* Botones */
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 14px 35px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+}
+
+.btn-primary:active {
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .vaccination-card-container {
+    padding: 15px;
+  }
+
+  .pet-header {
+    padding: 20px;
+  }
+
+  .pet-info-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .pet-avatar {
+    width: 100px;
+    height: 100px;
+    font-size: 3rem;
+  }
+
+  .pet-details h1 {
+    font-size: 2rem;
+  }
+
+  .pet-meta {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .tabs-navigation {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .tab-btn {
+    padding: 14px 18px;
+    font-size: 0.95rem;
+  }
+
+  .vacunas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .consultas-timeline {
+    padding-left: 45px;
+  }
+
+  .consultas-timeline::before {
+    left: 15px;
+  }
+
+  .consulta-date {
+    left: -15px;
+  }
+
+  .date-badge {
+    width: 50px;
+    height: 50px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .vaccination-card-container {
+    padding: 10px;
+  }
+
+  .pet-header {
+    padding: 15px;
+  }
+
+  .btn-back {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+
+  .pet-avatar {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+  }
+
+  .pet-details h1 {
+    font-size: 1.6rem;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  .vacuna-card,
+  .medicamento-item,
+  .alergia-item,
+  .consulta-content,
+  .vacuna-item {
+    padding: 18px;
+  }
+
+  .card-header {
+    padding: 18px 20px;
+  }
+
+  .card-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .tab-btn i {
+    font-size: 1.1rem;
+  }
+}

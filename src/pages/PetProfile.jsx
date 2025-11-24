@@ -10,10 +10,11 @@ export default function PetProfile() {
 
   useEffect(() => {
     api
-      .get(`/api/medical/cartilla/${id}`)
-      .then((res) => setData(res.data))
+      .get(`/api/pets/${id}`)
+      .then((res) => setData(res.data.pet))
       .catch((err) => {
-        console.error("Error cargando cartilla:", err);
+        console.error("Error cargando el perfil de la mascota:", err);
+        setError("No se pudo cargar la información de la mascota.");
       })
       .finally(() => setLoading(false));
   }, [id]);
