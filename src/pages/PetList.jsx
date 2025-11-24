@@ -144,7 +144,18 @@ export default function PetList() {
                     navigate(`/mis-mascotas/${pet.id}`);
                   }}
                 >
-                  Ver Cartilla Médica
+                  Ver Perfil
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--primary btn--sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/mis-mascotas/${pet.id}/cartilla`);
+                  }}
+                  style={{ marginLeft: '8px' }}
+                >
+                  📋 Cartilla
                 </button>
               </footer>
             </article>
