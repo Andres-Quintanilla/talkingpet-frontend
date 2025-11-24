@@ -18,6 +18,31 @@ export default function CourseViewer() {
   const [error, setError] = useState(null);
   const [activeContent, setActiveContent] = useState(null);
 
+  // Normaliza la URL del contenido para reproducirla
+  const resolveContentUrl = (url) => {
+    if (!url) return '';
+
+    // Si ya es absoluta (http/https), la usamos tal cual
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    // Si viene algo tipo "/uploads/archivo.mp4"
+    if (url.startsWith('/')) {
+      const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+      return `${base}${url}`;
+    }
+
+    // Si viene "uploads/archivo.mp4" sin slash al inicio
+    if (url.startsWith('uploads/')) {
+      const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+      return `${base}/${url}`;
+    }
+
+    // Cualquier otro caso raro, lo devolvemos igual
+    return url;
+  };
+
   useEffect(() => {
     const fetchCurso = async () => {
       if (!user) {
@@ -99,6 +124,11 @@ export default function CourseViewer() {
 
   if (!curso) return null;
 
+  // Si hay contenido activo, resolvemos la URL aquí una sola vez
+  const activeUrl = activeContent ? resolveContentUrl(activeContent.url) : '';
+  const isYouTube =
+    activeUrl.includes('youtube.com') || activeUrl.includes('youtu.be');
+
   return (
     <>
       <SEO
@@ -151,21 +181,39 @@ export default function CourseViewer() {
               <h1 className="course-viewer-main__title">
                 {activeContent.titulo}
               </h1>
+
               {activeContent.tipo === 'video' ? (
-                <div className="video-player-wrapper">
-                  <ReactPlayer
-                    url={activeContent.url}
-                    className="react-player"
-                    controls
-                    width="100%"
-                    height="100%"
-                    config={{
-                      youtube: {
-                        playerVars: { showinfo: 1 },
-                      },
-                    }}
-                  />
-                </div>
+                activeUrl ? (
+                  <div className="video-player-wrapper">
+                    {isYouTube ? (
+                      <ReactPlayer
+                        url={activeUrl}
+                        className="react-player"
+                        controls
+                        width="100%"
+                        height="100%"
+                        config={{
+                          youtube: {
+                            playerVars: { showinfo: 1 },
+                          },
+                        }}
+                      />
+                    ) : (
+                      <video
+                        className="react-player"
+                        controls
+                        style={{ width: '100%', height: '100%' }}
+                      >
+                        <source src={activeUrl} type="video/mp4" />
+                        Tu navegador no soporta la reproducción de este video.
+                      </video>
+                    )}
+                  </div>
+                ) : (
+                  <div className="video-player-wrapper-placeholder">
+                    <p>Este contenido no tiene URL de video configurada.</p>
+                  </div>
+                )
               ) : (
                 <div className="video-player-wrapper-placeholder">
                   <p>Contenido tipo "{activeContent.tipo}" (ej. PDF).</p>

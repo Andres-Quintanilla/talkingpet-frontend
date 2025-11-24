@@ -1,3 +1,4 @@
+// src/pages/employee/EmployeeDashboard.jsx
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axios';
 
@@ -17,9 +18,27 @@ const STATUS_CLASS = {
   no_asistio: 'badge badge--neutral',
 };
 
+// Normaliza fecha (Date o string) a 'YYYY-MM-DD'
+function normalizeDateStr(fecha) {
+  if (!fecha) return '';
+  if (fecha instanceof Date) {
+    return fecha.toISOString().slice(0, 10);
+  }
+  const s = String(fecha);
+  return s.length >= 10 ? s.slice(0, 10) : s;
+}
+
+// Construye un Date válido a partir de fecha + hora
 function buildDateTime(fecha, hora) {
   if (!fecha || !hora) return null;
-  return new Date(`${fecha}T${hora}`);
+  const f = normalizeDateStr(fecha);
+  return new Date(`${f}T${hora}`);
+}
+
+// Compara si la fecha de la cita es igual a la seleccionada
+function isSameDate(fecha, targetStr) {
+  if (!fecha || !targetStr) return false;
+  return normalizeDateStr(fecha) === targetStr;
 }
 
 export default function EmployeeDashboard() {
@@ -35,8 +54,7 @@ export default function EmployeeDashboard() {
       setLoading(true);
       setError('');
       try {
-        // IMPORTANTE: usamos /api/bookings/all
-        // el backend ya filtra por rol (peluquero, vet, adiestrador...)
+        // El backend ya filtra por rol (peluquero, vet, adiestrador, etc.)
         const { data } = await api.get('/api/bookings/all', {
           params: { _ts: Date.now() },
         });
@@ -62,6 +80,7 @@ export default function EmployeeDashboard() {
     load();
   }, []);
 
+  // KPIs de HOY (fecha actual)
   const stats = useMemo(() => {
     const today = new Date();
     const startOfDay = new Date(
@@ -81,7 +100,8 @@ export default function EmployeeDashboard() {
 
     bookings.forEach((b) => {
       const dt = buildDateTime(b.fecha, b.hora);
-      if (!dt) return;
+      if (!dt || Number.isNaN(dt.getTime())) return;
+
       if (dt >= startOfDay && dt < endOfDay) {
         totalHoy++;
         if (b.estado === 'pendiente') pendientes++;
@@ -92,12 +112,14 @@ export default function EmployeeDashboard() {
     return { totalHoy, pendientes, confirmadas };
   }, [bookings]);
 
+  // Citas para la fecha seleccionada en el calendario
   const bookingsByDate = useMemo(() => {
     return bookings
-      .filter((b) => b.fecha === selectedDate)
+      .filter((b) => isSameDate(b.fecha, selectedDate))
       .sort(
-        (a, b) =>
-          buildDateTime(a.fecha, a.hora) - buildDateTime(b.fecha, b.hora)
+        (a, b2) =>
+          (buildDateTime(a.fecha, a.hora)?.getTime() || 0) -
+          (buildDateTime(b2.fecha, b2.hora)?.getTime() || 0)
       );
   }, [bookings, selectedDate]);
 
@@ -122,6 +144,7 @@ export default function EmployeeDashboard() {
 
       {!loading && !error && (
         <>
+          {/* Tarjetas de KPIs */}
           <section className="admin-dashboard__cards">
             <div className="admin-card">
               <h3>Citas de hoy</h3>
@@ -137,6 +160,7 @@ export default function EmployeeDashboard() {
             </div>
           </section>
 
+          {/* Agenda por fecha */}
           <section className="admin-section">
             <div
               className="admin-main__header"

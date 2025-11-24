@@ -1,7 +1,9 @@
+// src/pages/employee/EmployeeCourses.jsx
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axios';
 import { formatCurrency } from '../../utils/format';
 import ImageUploader from '../../components/ImageUploader';
+import VideoUploader from '../../components/VideoUploader';
 
 const EMPTY_FORM = {
   titulo: '',
@@ -56,7 +58,6 @@ export default function EmployeeCourses() {
         params.search = search.trim();
       }
 
-      // IMPORTANTE: usamos /api/courses (no /api/courses/admin/list)
       const res = await api.get('/api/courses', { params });
 
       const items = Array.isArray(res.data?.items)
@@ -69,9 +70,13 @@ export default function EmployeeCourses() {
     } catch (e) {
       console.error('Error cargando cursos empleado', e);
       if (e.response?.status === 403) {
-        setError('No tienes permiso para ver los cursos. Consulta con el administrador.');
+        setError(
+          'No tienes permiso para ver los cursos. Consulta con el administrador.'
+        );
       } else if (e.response?.status === 404) {
-        setError('Endpoint de cursos no encontrado. Revisa la ruta en el backend.');
+        setError(
+          'Endpoint de cursos no encontrado. Revisa la ruta en el backend.'
+        );
       } else {
         setError('No se pudieron cargar los cursos.');
       }
@@ -274,9 +279,7 @@ export default function EmployeeCourses() {
       </header>
 
       {loading && (
-        <div className="admin-dashboard__loading">
-          Cargando cursos...
-        </div>
+        <div className="admin-dashboard__loading">Cargando cursos...</div>
       )}
 
       {error && !loading && (
@@ -373,10 +376,7 @@ export default function EmployeeCourses() {
               {form.modalidad === 'presencial' && (
                 <div className="form-row">
                   <div className="form-group">
-                    <label
-                      className="form-label"
-                      htmlFor="cupos_totales"
-                    >
+                    <label className="form-label" htmlFor="cupos_totales">
                       Cupos totales *
                     </label>
                     <input
@@ -421,15 +421,12 @@ export default function EmployeeCourses() {
                     onChange={handleChange}
                   />
                   <p className="form-note">
-                    Aquí puedes resumir qué aprenderá la persona en
-                    este curso.
+                    Aquí puedes resumir qué aprenderá la persona en este curso.
                   </p>
                 </div>
 
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label className="form-label">
-                    Portada del curso
-                  </label>
+                  <label className="form-label">Portada del curso</label>
                   <ImageUploader
                     value={form.portada_url}
                     onChange={(url) =>
@@ -439,6 +436,7 @@ export default function EmployeeCourses() {
                       }))
                     }
                   />
+
                   <label
                     className="form-label"
                     htmlFor="trailer_url"
@@ -456,9 +454,20 @@ export default function EmployeeCourses() {
                     onChange={handleChange}
                   />
                   <p className="form-note">
-                    Más adelante puedes gestionar las demás clases en
-                    una pantalla de &quot;Contenido del curso&quot;.
+                    Puedes pegar un enlace de YouTube o subir un archivo de
+                    video desde tu dispositivo.
                   </p>
+
+                  <VideoUploader
+                    value={form.trailer_url}
+                    onChange={(url) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        trailer_url: url,
+                      }))
+                    }
+                    label="Subir archivo de video (opcional)"
+                  />
                 </div>
               </div>
             </fieldset>
@@ -532,9 +541,7 @@ export default function EmployeeCourses() {
                           />
                         )}
                         <div>
-                          <div style={{ fontWeight: 600 }}>
-                            {c.titulo}
-                          </div>
+                          <div style={{ fontWeight: 600 }}>{c.titulo}</div>
                           <div
                             style={{
                               fontSize: '0.8rem',
@@ -547,9 +554,7 @@ export default function EmployeeCourses() {
                       </div>
                     </td>
                     <td>
-                      {c.modalidad === 'virtual'
-                        ? 'Virtual'
-                        : 'Presencial'}
+                      {c.modalidad === 'virtual' ? 'Virtual' : 'Presencial'}
                     </td>
                     <td>
                       {c.precio != null
@@ -559,8 +564,7 @@ export default function EmployeeCourses() {
                     <td>
                       <span
                         className={
-                          ESTADO_BADGE[c.estado] ||
-                          'badge badge--neutral'
+                          ESTADO_BADGE[c.estado] || 'badge badge--neutral'
                         }
                       >
                         {c.estado === 'borrador'

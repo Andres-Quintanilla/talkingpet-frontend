@@ -18,9 +18,25 @@ const STATUS_CLASS = {
   no_asistio: 'badge badge--neutral',
 };
 
+// Normaliza fecha (Date o string) a 'YYYY-MM-DD'
+function normalizeDateStr(fecha) {
+  if (!fecha) return '';
+  if (fecha instanceof Date) {
+    return fecha.toISOString().slice(0, 10);
+  }
+  const s = String(fecha);
+  return s.length >= 10 ? s.slice(0, 10) : s;
+}
+
 function buildDateTime(fecha, hora) {
   if (!fecha || !hora) return null;
-  return new Date(`${fecha}T${hora}`);
+  const f = normalizeDateStr(fecha);
+  return new Date(`${f}T${hora}`);
+}
+
+function isSameDate(fecha, targetStr) {
+  if (!fecha || !targetStr) return false;
+  return normalizeDateStr(fecha) === targetStr;
 }
 
 export default function EmployeeBookings() {
@@ -68,9 +84,11 @@ export default function EmployeeBookings() {
     const term = search.trim().toLowerCase();
 
     return bookings
-      .filter((b) => !selectedDate || b.fecha === selectedDate)
-      // si el backend manda pago_estado
+      // solo la fecha seleccionada
+      .filter((b) => !selectedDate || isSameDate(b.fecha, selectedDate))
+      // si el backend manda pago_estado, sólo mostrar pagadas
       .filter((b) => (b.pago_estado ? b.pago_estado === 'pagado' : true))
+      // búsqueda por texto
       .filter((b) => {
         if (!term) return true;
         const blob = (
@@ -84,9 +102,11 @@ export default function EmployeeBookings() {
           .includes(term);
         return blob;
       })
+      // ordenar por fecha/hora
       .sort(
         (a, b) =>
-          buildDateTime(a.fecha, a.hora) - buildDateTime(b.fecha, b.hora)
+          (buildDateTime(a.fecha, a.hora)?.getTime() || 0) -
+          (buildDateTime(b.fecha, b.hora)?.getTime() || 0)
       );
   }, [bookings, search, selectedDate]);
 

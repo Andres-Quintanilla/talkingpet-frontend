@@ -25,7 +25,7 @@ export default function CourseDetail() {
       try {
         setLoading(true);
 
-        // 1) SIEMPRE traer el curso primero
+        // 1) Traer el curso
         const { data } = await api.get(`/api/courses/${id}`);
         setCurso(data);
       } catch (err) {
@@ -38,7 +38,9 @@ export default function CourseDetail() {
       // 2) Si hay usuario, verificar inscripción
       if (user) {
         try {
-          const { data: misCursos } = await api.get('/api/courses/mine');
+          const { data: misCursos } = await api.get('/api/courses/mine', {
+            params: { _ts: Date.now() },
+          });
 
           if (Array.isArray(misCursos)) {
             if (misCursos.some((c) => c.curso_id === Number(id))) {
@@ -70,12 +72,12 @@ export default function CourseDetail() {
     // Añadir el curso al carrito local
     add(
       {
-        id: `curso-${curso.id}`,       // id único dentro del carrito
+        id: `curso-${curso.id}`, // id único dentro del carrito
         nombre: curso.titulo,
         precio: curso.precio ?? 0,
         tipo_item: 'curso',
         imagen_url: curso.portada_url || null,
-        curso_id: curso.id,           // para que Checkout sepa que es curso
+        curso_id: curso.id, // para que Checkout sepa que es curso
       },
       1
     );
@@ -115,15 +117,19 @@ export default function CourseDetail() {
       <SEO
         title={curso.titulo}
         description={(curso.descripcion || '').substring(0, 160)}
-        url={`http://localhost:5173/cursos/${id}`}
+        url={`${import.meta.env.VITE_PUBLIC_BASE_URL || 'http://localhost:5173'}/cursos/${id}`}
       />
 
       <div className="breadcrumb-wrapper">
         <div className="container">
           <nav className="breadcrumb" aria-label="Ruta de navegación">
-            <Link to="/" className="breadcrumb__link">Inicio</Link>
+            <Link to="/" className="breadcrumb__link">
+              Inicio
+            </Link>
             <span className="breadcrumb__separator">/</span>
-            <Link to="/cursos" className="breadcrumb__link">Cursos</Link>
+            <Link to="/cursos" className="breadcrumb__link">
+              Cursos
+            </Link>
             <span className="breadcrumb__separator">/</span>
             <span className="breadcrumb__current">{curso.titulo}</span>
           </nav>
@@ -144,7 +150,7 @@ export default function CourseDetail() {
             {isVirtual ? 'Contenido del Curso' : 'Detalles del Taller'}
           </h2>
 
-          {/* CONTENIDO */}
+          {/* CONTENIDO / DETALLE, SIN VIDEO AQUÍ */}
           {isVirtual ? (
             <div className="course-content-list">
               {contenido.length === 0 && (
@@ -211,9 +217,7 @@ export default function CourseDetail() {
 
         <aside className="course-detail-sidebar">
           <div className="course-buy-box">
-            <div className="course-buy-box__icon">
-              {isVirtual ? '💻' : '🐾'}
-            </div>
+            <div className="course-buy-box__icon">{isVirtual ? '💻' : '🐾'}</div>
 
             <div className="course-buy-box__price">
               {curso.precio != null ? formatCurrency(curso.precio) : 'Gratis'}
@@ -254,9 +258,7 @@ export default function CourseDetail() {
               <div className="meta-item">
                 <Users size={16} />
                 <span>
-                  {isVirtual
-                    ? 'Acceso individual'
-                    : `${curso.cupos_totales || 'N/A'} cupos`}
+                  {isVirtual ? 'Acceso individual' : `${curso.cupos_totales || 'N/A'} cupos`}
                 </span>
               </div>
             </div>

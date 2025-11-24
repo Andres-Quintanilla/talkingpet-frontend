@@ -1,3 +1,4 @@
+// src/pages/ProductDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -18,16 +19,29 @@ export default function ProductDetail() {
     })();
   }, [id]);
 
+  useEffect(() => {
+    if (p) {
+      // si no hay stock, cantidad 0, si hay stock empezamos en 1
+      setQty(p.stock > 0 ? 1 : 0);
+    }
+  }, [p]);
+
   if (!p) return null;
 
   const imageUrl = p.imagen_url || '/images/dog-food.svg';
+  const inStock = p.stock > 0;
 
   const handleAddToCart = () => {
+    if (!inStock) return;
+
+    const safeQty = Math.min(qty, p.stock || 0);
+    if (safeQty <= 0) return;
+
     const item = {
       ...p,
       imagen_url: imageUrl,
     };
-    add(item, qty);
+    add(item, safeQty);
   };
 
   // Structured Data para el producto
@@ -36,7 +50,9 @@ export default function ProductDetail() {
     '@type': 'Product',
     name: p.nombre,
     description: p.descripcion || 'Producto para mascotas de calidad',
-    image: imageUrl.startsWith('http') ? imageUrl : `http://localhost:5173${imageUrl}`,
+    image: imageUrl.startsWith('http')
+      ? imageUrl
+      : `http://localhost:5173${imageUrl}`,
     brand: {
       '@type': 'Brand',
       name: 'TalkingPet',
@@ -45,25 +61,54 @@ export default function ProductDetail() {
       '@type': 'Offer',
       price: p.precio,
       priceCurrency: 'BOB',
-      availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      availability:
+        p.stock > 0
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
       url: `http://localhost:5173/productos/${p.id}`,
     },
-    aggregateRating: p.calificacion ? {
-      '@type': 'AggregateRating',
-      ratingValue: p.calificacion,
-      reviewCount: p.total_reviews || 1,
-    } : undefined,
+    aggregateRating: p.calificacion
+      ? {
+          '@type': 'AggregateRating',
+          ratingValue: p.calificacion,
+          reviewCount: p.total_reviews || 1,
+        }
+      : undefined,
+  };
+
+  const handleChangeQty = (value) => {
+    if (!inStock) return;
+    const max = p.stock || 0;
+    let v = Number(value || 1);
+    if (Number.isNaN(v)) v = 1;
+    v = Math.max(1, Math.min(max, v));
+    setQty(v);
+  };
+
+  const handleDecrease = () => {
+    if (!inStock) return;
+    setQty((q) => Math.max(1, Math.min(p.stock, q - 1)));
+  };
+
+  const handleIncrease = () => {
+    if (!inStock) return;
+    setQty((q) => Math.min(p.stock, q + 1));
   };
 
   return (
     <>
       <SEO
         title={`${p.nombre} - Productos para Mascotas`}
-        description={p.descripcion?.slice(0, 155) || `${p.nombre} - Producto de calidad para tu mascota. Disponible en TalkingPet Bolivia.`}
+        description={
+          p.descripcion?.slice(0, 155) ||
+          `${p.nombre} - Producto de calidad para tu mascota. Disponible en TalkingPet Bolivia.`
+        }
         url={`/productos/${p.id}`}
         image={imageUrl}
         type="product"
-        keywords={`${p.nombre}, ${p.categoria || 'productos mascotas'}, comprar ${p.nombre}, ${p.nombre} Bolivia`}
+        keywords={`${p.nombre}, ${
+          p.categoria || 'productos mascotas'
+        }, comprar ${p.nombre}, ${p.nombre} Bolivia`}
         structuredData={productStructuredData}
       />
 
@@ -88,55 +133,71 @@ export default function ProductDetail() {
               </span>
             </div>
 
+            {/* STOCK */}
+            <p
+              className={`product-info__stock ${
+                inStock
+                  ? 'product-info__stock--available'
+                  : 'product-info__stock--out'
+              }`}
+            >
+              {inStock
+                ? `Quedan ${p.stock} unidades disponibles`
+                : 'Sin stock disponible'}
+            </p>
+
             <div className="product-info__description">
               <h2 className="product-info__subtitle">Descripción</h2>
               <p>{p.descripcion || 'Sin descripción.'}</p>
             </div>
 
             {/* Cantidad + botón */}
-            <div className="form-group" style={{ maxWidth: 220 }}>
-              <label className="form-label" htmlFor="product-qty">
-                Cantidad
-              </label>
-              <div className="quantity-box">
-                <button
-                  type="button"
-                  className="quantity-btn"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                >
-                  −
-                </button>
+            <div className="product-info__purchase">
+              <div className="form-group" style={{ maxWidth: 220 }}>
+                <label className="form-label" htmlFor="product-qty">
+                  Cantidad
+                </label>
+                <div className="quantity-box">
+                  <button
+                    type="button"
+                    className="quantity-btn"
+                    onClick={handleDecrease}
+                    disabled={!inStock}
+                  >
+                    −
+                  </button>
 
-                <input
-                  id="product-qty"
-                  type="number"
-                  className="quantity-input"
-                  min={1}
-                  max={99}
-                  value={qty}
-                  onChange={(e) => {
-                    const val = Number(e.target.value || 1);
-                    if (val >= 1 && val <= 99) setQty(val);
-                  }}
-                />
+                  <input
+                    id="product-qty"
+                    type="number"
+                    className="quantity-input"
+                    min={1}
+                    max={inStock ? p.stock : 0}
+                    value={qty}
+                    disabled={!inStock}
+                    onChange={(e) => handleChangeQty(e.target.value)}
+                  />
 
+                  <button
+                    type="button"
+                    className="quantity-btn"
+                    onClick={handleIncrease}
+                    disabled={!inStock}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="product-info__buttons">
                 <button
-                  type="button"
-                  className="quantity-btn"
-                  onClick={() => setQty((q) => Math.min(99, q + 1))}
+                  className="btn btn--primary btn--lg"
+                  onClick={handleAddToCart}
+                  disabled={!inStock}
                 >
-                  +
+                  {inStock ? 'Agregar al carrito' : 'Sin stock'}
                 </button>
               </div>
-            </div>
-
-            <div className="product-info__buttons">
-              <button
-                className="btn btn--primary btn--lg"
-                onClick={handleAddToCart}
-              >
-                Agregar al carrito
-              </button>
             </div>
           </div>
         </div>

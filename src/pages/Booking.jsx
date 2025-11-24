@@ -36,6 +36,7 @@ export default function Booking() {
   const navigate = useNavigate();
   const { add } = useCart();
 
+  // 👇 si vienes desde /servicios, acá llega el ID del servicio elegido
   const preselectedServiceId = location.state?.servicioId || null;
 
   const [services, setServices] = useState([]);
@@ -193,7 +194,15 @@ export default function Booking() {
       hora &&
       direccionOK
     );
-  }, [selectedService, petSelections, fecha, hora, modalidad, ubicacion, direccionReferencia]);
+  }, [
+    selectedService,
+    petSelections,
+    fecha,
+    hora,
+    modalidad,
+    ubicacion,
+    direccionReferencia,
+  ]);
 
   const handlePetChange = (index, value) => {
     setPetSelections((prev) => {
@@ -290,7 +299,6 @@ export default function Booking() {
       }
     }
 
-    // ==== AQUÍ ES DONDE MANDAMOS LA IMAGEN AL CARRITO ====
     const cartItem = {
       id: `svc-${selectedService.id}-${Date.now()}`,
       tipo_item: 'servicio',
@@ -300,13 +308,9 @@ export default function Booking() {
         .map((m) => m.nombre)
         .join(', ')}. Fecha: ${fecha} Hora: ${hora}.`,
       precio: totalServicio,
-
-      // 👇 imagen del servicio para que el carrito la muestre
-      // usa la columna imagen_url de la tabla "servicio"
       imagen_url:
         selectedService.imagen_url ||
-        '/static/services/servicio-generico.png', // pon aquí tu imagen por defecto
-
+        '/static/services/servicio-generico.png',
       detalle_servicio: {
         servicio: {
           id: selectedService.id,
@@ -375,7 +379,29 @@ export default function Booking() {
                       <p className="form-note">
                         No hay servicios configurados en este momento.
                       </p>
+                    ) : preselectedServiceId && selectedService ? (
+                      // 🟢 Caso: vienes desde /servicios con un servicio elegido
+                      <div className="form-group">
+                        <p className="form-label">Servicio seleccionado</p>
+                        <div className="info-box">
+                          <h3 className="info-box__title">
+                            {selectedService.nombre}
+                          </h3>
+                          <p className="form-note">
+                            Tipo: <strong>{selectedService.tipo}</strong>
+                            <br />
+                            Precio base:{' '}
+                            <strong>
+                              {formatCurrency(
+                                Number(selectedService.precio_base || 0)
+                              )}{' '}
+                              por mascota
+                            </strong>
+                          </p>
+                        </div>
+                      </div>
                     ) : (
+                      // 🟠 Caso: entras directo a /agendar → puedes elegir servicio
                       <div className="form-group">
                         <label className="form-label" htmlFor="servicio">
                           Servicio *
@@ -390,8 +416,9 @@ export default function Booking() {
                           <option value="">Selecciona un servicio</option>
                           {services.map((s) => (
                             <option key={s.id} value={s.id}>
-                              {s.nombre} —{' '}
-                              {formatCurrency(Number(s.precio_base || 0))}
+                              {`${s.nombre} — ${formatCurrency(
+                                Number(s.precio_base || 0)
+                              )}`}
                             </option>
                           ))}
                         </select>

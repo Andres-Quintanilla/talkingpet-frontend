@@ -8,7 +8,31 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import { formatCurrency } from '../utils/format';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+
+// ===== Componente hijo para seleccionar ubicación en el mapa (igual que en Booking) =====
+function LocationPicker({ value, onChange }) {
+  const [position, setPosition] = useState(
+    value || { lat: -17.7833, lng: -63.1821 }
+  );
+
+  const map = useMapEvents({
+    click(e) {
+      const next = { lat: e.latlng.lat, lng: e.latlng.lng };
+      setPosition(next);
+      onChange(next);
+    },
+  });
+
+  useEffect(() => {
+    if (value && value.lat && value.lng) {
+      setPosition(value);
+      map.setView([value.lat, value.lng], map.getZoom());
+    }
+  }, [value, map]);
+
+  return position ? <Marker position={[position.lat, position.lng]} /> : null;
+}
 
 export default function Checkout() {
   const { items, clear } = useCart();
@@ -16,15 +40,22 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [metodoPago, setMetodoPago] = useState('efectivo');
-  const [direccionEnvio, setDireccionEnvio] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [createdOrderId, setCreatedOrderId] = useState(null);
   const [showStripePayment, setShowStripePayment] = useState(false);
 
-  // Dirección habitual guardada (Booking)
+  // Dirección habitual guardada (la misma que usas en Booking)
   const [savedAddress, setSavedAddress] = useState(null);
+  const [addressMode, setAddressMode] = useState('saved'); // 'saved' | 'new'
+  const [shippingMode, setShippingMode] = useState('domicilio'); // 'domicilio' | 'tienda'
+
+  // Campos de dirección igual que en Booking
+  const [direccionReferencia, setDireccionReferencia] = useState('');
+  const [numeroCasa, setNumeroCasa] = useState('');
+  const [manzano, setManzano] = useState('');
   const [mapPosition, setMapPosition] = useState(null);
+  const [locating, setLocating] = useState(false);
 
   // Cursos del último pedido (para auto-inscripción tras pago con tarjeta/QR)
   const [lastOrderCourseIds, setLastOrderCourseIds] = useState([]);
@@ -51,29 +82,30 @@ export default function Checkout() {
 
         if (data) {
           setSavedAddress(data);
+          setAddressMode('saved');
 
+          setDireccionReferencia(data.referencia || '');
+          setNumeroCasa(data.numero_casa || '');
+          setManzano(data.manzano || '');
           if (data.lat && data.lng) {
             setMapPosition({
               lat: Number(data.lat),
               lng: Number(data.lng),
             });
           }
-
-          const composedLines = [
-            data.referencia || '',
-            data.numero_casa ? `Casa Nº ${data.numero_casa}` : '',
-            data.manzano ? `Manzano ${data.manzano}` : '',
-          ].filter(Boolean);
-
-          setDireccionEnvio(composedLines.join(' - '));
+        } else {
+          setAddressMode('new');
         }
       } catch (error) {
         console.error('Error cargando dirección habitual:', error);
+        setAddressMode('new');
       }
     };
 
-    loadSavedAddress();
-  }, []);
+    if (!soloCursos) {
+      loadSavedAddress();
+    }
+  }, [soloCursos]);
 
   // Helper para auto-inscribir cursos llamando al backend
   const autoEnrollCourses = async (courseIds) => {
@@ -91,10 +123,59 @@ export default function Checkout() {
     }
   };
 
+  const handleUseCurrentLocation = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      alert('Tu navegador no soporta geolocalización.');
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const next = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        setMapPosition(next);
+        setLocating(false);
+      },
+      (err) => {
+        console.error('Error obteniendo ubicación:', err);
+        alert('No se pudo obtener tu ubicación. Revisa los permisos del navegador.');
+        setLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+  };
+
+  const handleAddressModeChange = (mode) => {
+    setAddressMode(mode);
+    if (mode === 'saved' && savedAddress) {
+      setDireccionReferencia(savedAddress.referencia || '');
+      setNumeroCasa(savedAddress.numero_casa || '');
+      setManzano(savedAddress.manzano || '');
+      if (savedAddress.lat && savedAddress.lng) {
+        setMapPosition({
+          lat: Number(savedAddress.lat),
+          lng: Number(savedAddress.lng),
+        });
+      }
+    }
+    if (mode === 'new') {
+      // puedes limpiar si quieres empezar de cero
+      // setDireccionReferencia('');
+      // setNumeroCasa('');
+      // setManzano('');
+      // setMapPosition(null);
+    }
+  };
+
   // Pago con tarjeta / QR exitoso
   const handlePaymentSuccess = async () => {
     try {
-      // 1) Marcar pedido como pagado en el backend
       if (createdOrderId) {
         try {
           await api.post(`/api/orders/${createdOrderId}/mark-paid`);
@@ -103,7 +184,6 @@ export default function Checkout() {
         }
       }
 
-      // 2) Auto-inscribir cursos (por si el backend no lo hizo)
       if (lastOrderCourseIds.length > 0) {
         await autoEnrollCourses(lastOrderCourseIds);
       }
@@ -131,6 +211,18 @@ export default function Checkout() {
       return;
     }
 
+    // Validar dirección cuando NO son solo cursos
+    if (!soloCursos && shippingMode === 'domicilio') {
+      if (!direccionReferencia.trim()) {
+        setError('Por favor indica la referencia de la dirección.');
+        return;
+      }
+      if (!mapPosition) {
+        setError('Por favor marca tu ubicación en el mapa o usa tu ubicación actual.');
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const normalizedItems = items.map((it) => ({
@@ -146,14 +238,47 @@ export default function Checkout() {
         detalle_servicio: it.detalle_servicio || null,
       }));
 
+      // ===== Construir dirección final para el pedido =====
+      let direccionEnvio = null;
+
+      if (!soloCursos) {
+        if (shippingMode === 'tienda') {
+          // Dirección del local TalkingPet (cámbiala por la real)
+          direccionEnvio =
+            'Recoger en tienda TalkingPet - Calle Ejemplo #123, Santa Cruz';
+        } else {
+          // Entrega a domicilio
+          const partes = [
+            direccionReferencia || '',
+            numeroCasa ? `Casa Nº ${numeroCasa}` : '',
+            manzano ? `Manzano ${manzano}` : '',
+          ].filter(Boolean);
+          direccionEnvio = partes.join(' - ');
+
+          // Si está usando NUEVA ubicación, la guardamos como habitual
+          if (addressMode === 'new') {
+            try {
+              await api.post('/api/customers/service-address', {
+                referencia: direccionReferencia,
+                numero_casa: numeroCasa || null,
+                manzano: manzano || null,
+                lat: mapPosition?.lat || null,
+                lng: mapPosition?.lng || null,
+              });
+            } catch (err) {
+              console.error('No se pudo guardar la dirección del cliente:', err);
+            }
+          }
+        }
+      }
+
       const payload = {
         items: normalizedItems,
         subtotal,
         shipping,
         total,
         metodo_pago: metodoPago,
-        // si solo son cursos, no guardamos dirección
-        direccion_envio: soloCursos ? null : direccionEnvio || null,
+        direccion_envio: direccionEnvio,
       };
 
       const { data } = await api.post('/api/orders', payload);
@@ -166,14 +291,12 @@ export default function Checkout() {
 
       setLastOrderCourseIds(courseIds);
 
-      // Si el método de pago es tarjeta o QR, mostramos el componente correspondiente
       if (metodoPago === 'tarjeta' || metodoPago === 'qr') {
         setCreatedOrderId(data?.id);
         setShowStripePayment(metodoPago === 'tarjeta');
         return;
       }
 
-      // Para otros métodos de pago (efectivo), inscribimos cursos enseguida
       if (courseIds.length > 0) {
         await autoEnrollCourses(courseIds);
       }
@@ -282,67 +405,188 @@ export default function Checkout() {
                     2. Dirección de envío / servicio
                   </legend>
 
-                  {savedAddress ? (
-                    <>
-                      <p className="form-note">
-                        Esta es la dirección que seleccionaste en el mapa al
-                        agendar tu servicio. Revísala antes de confirmar.
-                      </p>
+                  {/* Modo de entrega: domicilio vs recoger en tienda */}
+                  <div className="form-group">
+                    <label className="form-label">Forma de entrega</label>
+                    <div className="radio-group">
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="shippingMode"
+                          value="domicilio"
+                          checked={shippingMode === 'domicilio'}
+                          onChange={() => setShippingMode('domicilio')}
+                        />
+                        <div>
+                          <strong>Entrega a domicilio / lugar del servicio</strong>
+                          <p className="form-note">
+                            Usaremos tu ubicación guardada o una nueva dirección.
+                          </p>
+                        </div>
+                      </label>
+                      <label className="radio-option">
+                        <input
+                          type="radio"
+                          name="shippingMode"
+                          value="tienda"
+                          checked={shippingMode === 'tienda'}
+                          onChange={() => setShippingMode('tienda')}
+                        />
+                        <div>
+                          <strong>Recoger en tienda TalkingPet</strong>
+                          <p className="form-note">
+                            No necesitamos tu ubicación, recogerás tu pedido en el
+                            local.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
 
-                      {mapPosition && (
+                  {shippingMode === 'tienda' ? (
+                    <div className="info-box">
+                      <h3 className="info-box__title">
+                        Dirección del local TalkingPet
+                      </h3>
+                      <p className="form-note">
+                        Calle Ejemplo #123, Barrio Central, Santa Cruz.  
+                        (Cambia este texto por la dirección real de tu tienda).
+                      </p>
+                      <p className="form-note">
+                        Te avisaremos por WhatsApp cuando tu pedido esté listo
+                        para recoger.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {savedAddress && (
+                        <div className="form-group">
+                          <label className="form-label">Ubicación</label>
+                          <div className="radio-group">
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="addressMode"
+                                value="saved"
+                                checked={addressMode === 'saved'}
+                                onChange={() => handleAddressModeChange('saved')}
+                              />
+                              <div>
+                                <strong>Usar ubicación guardada</strong>
+                                <p className="form-note">
+                                  {savedAddress.referencia ||
+                                    'Dirección guardada previamente.'}
+                                </p>
+                              </div>
+                            </label>
+                            <label className="radio-option">
+                              <input
+                                type="radio"
+                                name="addressMode"
+                                value="new"
+                                checked={addressMode === 'new'}
+                                onChange={() => handleAddressModeChange('new')}
+                              />
+                              <div>
+                                <strong>Añadir nueva ubicación</strong>
+                                <p className="form-note">
+                                  Podrás actualizar tu dirección habitual.
+                                </p>
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Campos de dirección (como en Booking) */}
+                      <div className="form-group">
+                        <label className="form-label" htmlFor="direccion_ref">
+                          Referencia de la dirección *
+                        </label>
+                        <input
+                          id="direccion_ref"
+                          className="form-input"
+                          placeholder="Ej. Calle 3, casa amarilla, cerca de la plaza..."
+                          value={direccionReferencia}
+                          onChange={(e) => setDireccionReferencia(e.target.value)}
+                          required
+                          disabled={addressMode === 'saved'}
+                        />
+                      </div>
+
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="numero_casa">
+                            Número de casa
+                          </label>
+                          <input
+                            id="numero_casa"
+                            className="form-input"
+                            value={numeroCasa}
+                            onChange={(e) => setNumeroCasa(e.target.value)}
+                            disabled={addressMode === 'saved'}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label" htmlFor="manzano">
+                            Manzano / Bloque
+                          </label>
+                          <input
+                            id="manzano"
+                            className="form-input"
+                            value={manzano}
+                            onChange={(e) => setManzano(e.target.value)}
+                            disabled={addressMode === 'saved'}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label className="form-label">
+                          Ubicación en el mapa *
+                        </label>
+                        <p className="form-note">
+                          Haz clic en el mapa para marcar el punto donde debemos
+                          ir o usa tu ubicación actual.
+                        </p>
+
+                        <button
+                          type="button"
+                          className="btn btn--secondary btn--sm"
+                          onClick={handleUseCurrentLocation}
+                          disabled={locating || addressMode === 'saved'}
+                          style={{ marginBottom: '0.75rem' }}
+                        >
+                          {locating
+                            ? 'Obteniendo tu ubicación...'
+                            : 'Usar mi ubicación actual'}
+                        </button>
+
                         <div
                           style={{
                             height: 260,
                             borderRadius: 12,
                             overflow: 'hidden',
                             border: '1px solid var(--color-border)',
-                            marginBottom: '0.75rem',
                           }}
                         >
                           <MapContainer
-                            center={[mapPosition.lat, mapPosition.lng]}
-                            zoom={15}
+                            center={
+                              mapPosition
+                                ? [mapPosition.lat, mapPosition.lng]
+                                : [-17.7833, -63.1821]
+                            }
+                            zoom={13}
                             style={{ height: '100%', width: '100%' }}
-                            scrollWheelZoom={false}
-                            doubleClickZoom={false}
-                            dragging={false}
-                            zoomControl={false}
                           >
                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <Marker
-                              position={[mapPosition.lat, mapPosition.lng]}
+                            <LocationPicker
+                              value={mapPosition}
+                              onChange={setMapPosition}
                             />
                           </MapContainer>
                         </div>
-                      )}
-
-                      {tieneProductos && (
-                        <>
-                          <p className="form-note">
-                            Si también tienes productos físicos, puedes ajustar
-                            el texto de envío aquí abajo.
-                          </p>
-                          <textarea
-                            className="form-input"
-                            value={direccionEnvio}
-                            onChange={(e) => setDireccionEnvio(e.target.value)}
-                            placeholder="Ej. Calle 3, casa amarilla..."
-                          />
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p className="form-note">
-                        No encontramos una dirección habitual guardada. Escribe
-                        aquí la dirección para el envío / servicio.
-                      </p>
-                      <textarea
-                        className="form-input"
-                        value={direccionEnvio}
-                        onChange={(e) => setDireccionEnvio(e.target.value)}
-                        placeholder="Ej. Calle 3, casa amarilla..."
-                      />
+                      </div>
                     </>
                   )}
                 </fieldset>
