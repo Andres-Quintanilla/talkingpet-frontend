@@ -4,12 +4,14 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../utils/format';
 import { CheckCircle, Clock, Users, PlayCircle, Lock } from 'lucide-react';
 
 export default function CourseDetail() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { add } = useCart();
   const navigate = useNavigate();
 
   const [curso, setCurso] = useState(null);
@@ -54,28 +56,32 @@ export default function CourseDetail() {
     fetchCurso();
   }, [id, user]);
 
-  const handleBuyOrEnroll = async () => {
+  const handleBuyOrEnroll = () => {
+    if (!curso) return;
+
+    // Si no está logueado, lo mandamos a login
     if (!user) {
       navigate('/login', { state: { returnTo: `/cursos/${id}` } });
       return;
     }
 
-    if (!curso) return;
-
     setEnrolling(true);
-    try {
-      await api.post('/api/cart/add', {
-        curso_id: Number(id),
-        cantidad: 1,
-      });
 
-      navigate('/carrito');
-    } catch (err) {
-      console.error('Error añadiendo curso al carrito:', err);
-      alert('No se pudo añadir el curso al carrito.');
-    } finally {
-      setEnrolling(false);
-    }
+    // Añadir el curso al carrito local
+    add(
+      {
+        id: `curso-${curso.id}`,       // id único dentro del carrito
+        nombre: curso.titulo,
+        precio: curso.precio ?? 0,
+        tipo_item: 'curso',
+        imagen_url: curso.portada_url || null,
+        curso_id: curso.id,           // para que Checkout sepa que es curso
+      },
+      1
+    );
+
+    setEnrolling(false);
+    navigate('/carrito');
   };
 
   if (loading) {

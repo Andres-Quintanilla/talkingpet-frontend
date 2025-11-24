@@ -1,3 +1,4 @@
+// src/pages/MyCourses.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -12,7 +13,10 @@ export default function MyCourses() {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get('/api/courses/mine');
+        // _ts para evitar caché
+        const { data } = await api.get('/api/courses/mine', {
+          params: { _ts: Date.now() },
+        });
         setItems(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching my courses:', error);
@@ -64,12 +68,27 @@ export default function MyCourses() {
                 items.map((c) => {
                   const isVirtual = c.modalidad === 'virtual';
                   const pagado = c.precio_snapshot ?? c.precio;
+                  const cursoId = c.curso_id || c.id;
+
+                  // 👇 Intentamos varios nombres de campo para la imagen
+                  const thumbnail =
+                    c.portada_url ||
+                    c.portada ||
+                    c.imagen_url ||
+                    '/static/courses/default-course.jpg';
 
                   return (
                     <article key={c.id} className="course-card">
-                      <div className="course-card__icon" aria-hidden>
-                        {isVirtual ? '💻' : '🐾'}
+                      {/* Imagen del curso */}
+                      <div className="course-card__image-wrapper">
+                        <img
+                          src={thumbnail}
+                          alt={c.titulo}
+                          className="course-card__image"
+                          loading="lazy"
+                        />
                       </div>
+
                       <h3 className="course-card__title">{c.titulo}</h3>
 
                       <ul className="course-card__details">
@@ -80,22 +99,20 @@ export default function MyCourses() {
                               isVirtual ? 'badge--primary' : 'badge--accent'
                             }`}
                           >
-                            {isVirtual ? 'Virtual' : 'Presencial'}
+                            {isVirtual ? 'virtual' : 'presencial'}
                           </span>
                         </li>
                         <li>
-                          <strong>Progreso:</strong> {c.progreso}%
+                          <strong>Progreso:</strong> {c.progreso ?? 0}%
                         </li>
                         <li>
                           <strong>Pagado:</strong>{' '}
-                          {pagado != null
-                            ? formatCurrency(pagado)
-                            : '0,00'}
+                          {pagado != null ? formatCurrency(pagado) : '0,00'}
                         </li>
                       </ul>
 
                       <Link
-                        to={isVirtual ? `/mis-cursos/${c.curso_id}/ver` : '#'}
+                        to={isVirtual ? `/mis-cursos/${cursoId}/ver` : '#'}
                         className={`btn ${
                           isVirtual
                             ? 'btn--primary'

@@ -26,6 +26,9 @@ export default function Checkout() {
   const [savedAddress, setSavedAddress] = useState(null);
   const [mapPosition, setMapPosition] = useState(null);
 
+  // Cursos del último pedido (para auto-inscripción tras pago con tarjeta/QR)
+  const [lastOrderCourseIds, setLastOrderCourseIds] = useState([]);
+
   const subtotal = useMemo(
     () => items.reduce((acc, it) => acc + (it.precio || 0) * (it.qty || 1), 0),
     [items]
@@ -35,7 +38,7 @@ export default function Checkout() {
 
   const tieneServicios = items.some((it) => it.tipo_item === 'servicio');
   const tieneProductos = items.some((it) => it.tipo_item === 'producto');
-  const soloCursos = items.every((it) => it.tipo_item === 'curso');
+  const soloCursos = items.length > 0 && items.every((it) => it.tipo_item === 'curso');
 
   // === Cargar dirección habitual al entrar a Checkout ===
   useEffect(() => {
@@ -55,7 +58,6 @@ export default function Checkout() {
             });
           }
 
-          // Texto para el textarea (se puede editar si hay productos)
           const composedLines = [
             data.referencia || '',
             data.numero_casa ? `Casa Nº ${data.numero_casa}` : '',
@@ -65,7 +67,6 @@ export default function Checkout() {
           setDireccionEnvio(composedLines.join(' - '));
         }
       } catch (error) {
-        // Si no hay dirección guardada, simplemente no mostramos el mapa
         console.error('Error cargando dirección habitual:', error);
       }
     };
@@ -73,9 +74,33 @@ export default function Checkout() {
     loadSavedAddress();
   }, []);
 
-  const handlePaymentSuccess = () => {
-    clear();
-    navigate('/pago/exitoso', { state: { orderId: createdOrderId } });
+  // Helper para auto-inscribir cursos llamando al backend
+  const autoEnrollCourses = async (courseIds) => {
+    if (!courseIds || courseIds.length === 0) return;
+
+    for (const rawId of courseIds) {
+      const courseId = Number(rawId);
+      if (Number.isNaN(courseId)) continue;
+
+      try {
+        await api.post(`/api/courses/${courseId}/enroll`);
+      } catch (err) {
+        console.error('Error auto-inscribiendo al curso', courseId, err);
+      }
+    }
+  };
+
+  // Pago con tarjeta / QR exitoso
+  const handlePaymentSuccess = async () => {
+    try {
+      // Para tarjeta / QR inscribimos aquí (por si el backend no lo hizo)
+      if (lastOrderCourseIds.length > 0) {
+        await autoEnrollCourses(lastOrderCourseIds);
+      }
+    } finally {
+      clear();
+      navigate('/pago/exitoso', { state: { orderId: createdOrderId } });
+    }
   };
 
   const handlePaymentError = (errorMsg) => {
@@ -123,14 +148,26 @@ export default function Checkout() {
 
       const { data } = await api.post('/api/orders', payload);
 
-      // Si el método de pago es tarjeta o QR, mostrar el componente correspondiente
+      // IDs de cursos incluidos en este pedido (sanitizados)
+      const courseIds = normalizedItems
+        .filter((it) => it.tipo_item === 'curso')
+        .map((it) => Number(it.curso_id || it.id))
+        .filter((id) => !Number.isNaN(id));
+
+      setLastOrderCourseIds(courseIds);
+
+      // Si el método de pago es tarjeta o QR, mostramos el componente correspondiente
       if (metodoPago === 'tarjeta' || metodoPago === 'qr') {
         setCreatedOrderId(data?.id);
         setShowStripePayment(metodoPago === 'tarjeta');
         return;
       }
 
-      // Para otros métodos de pago (efectivo), redirigir directamente
+      // Para otros métodos de pago (efectivo), inscribimos cursos enseguida
+      if (courseIds.length > 0) {
+        await autoEnrollCourses(courseIds);
+      }
+
       clear();
       navigate('/mis-pedidos', { state: { orderId: data?.id } });
     } catch (err) {
@@ -192,7 +229,6 @@ export default function Checkout() {
                               : 'Producto'}
                           </span>
 
-                          {/* Datos del servicio igual que en Booking */}
                           {it.tipo_item === 'servicio' &&
                             it.detalle_servicio && (
                               <div className="checkout-item__details">
@@ -216,50 +252,6 @@ export default function Checkout() {
                                   {it.detalle_servicio.fecha} a las{' '}
                                   {it.detalle_servicio.hora}
                                 </p>
-                                {it.detalle_servicio.direccion && (
-                                  <>
-                                    <p className="form-note">
-                                      <strong>Referencia:</strong>{' '}
-                                      {
-                                        it.detalle_servicio.direccion
-                                          .referencia
-                                      }
-                                    </p>
-                                    {(it.detalle_servicio.direccion
-                                      .numero_casa ||
-                                      it.detalle_servicio.direccion.manzano) && (
-                                      <p className="form-note">
-                                        <strong>Detalle:</strong>{' '}
-                                        {[
-                                          it.detalle_servicio.direccion
-                                            .numero_casa
-                                            ? `Casa Nº ${it.detalle_servicio.direccion.numero_casa}`
-                                            : '',
-                                          it.detalle_servicio.direccion.manzano
-                                            ? `Manzano ${it.detalle_servicio.direccion.manzano}`
-                                            : '',
-                                        ]
-                                          .filter(Boolean)
-                                          .join(' - ')}
-                                      </p>
-                                    )}
-                                    {it.detalle_servicio.direccion.lat &&
-                                      it.detalle_servicio.direccion.lng && (
-                                        <p className="form-note">
-                                          <strong>Ubicación mapa:</strong>{' '}
-                                          (
-                                          {
-                                            it.detalle_servicio.direccion.lat
-                                          }
-                                          ,{' '}
-                                          {
-                                            it.detalle_servicio.direccion.lng
-                                          }
-                                          )
-                                        </p>
-                                      )}
-                                  </>
-                                )}
                               </div>
                             )}
                         </div>
@@ -287,7 +279,6 @@ export default function Checkout() {
                         agendar tu servicio. Revísala antes de confirmar.
                       </p>
 
-                      {/* Mapa solo de lectura para confirmar la ubicación */}
                       {mapPosition && (
                         <div
                           style={{
@@ -315,40 +306,11 @@ export default function Checkout() {
                         </div>
                       )}
 
-                      <div className="info-box" style={{ marginBottom: '1rem' }}>
-                        <h3 className="info-box__title">Detalle de dirección</h3>
-                        <ul className="info-box__list">
-                          <li>
-                            <strong>Referencia:</strong>{' '}
-                            {savedAddress.referencia}
-                          </li>
-                          {savedAddress.numero_casa && (
-                            <li>
-                              <strong>Número de casa:</strong>{' '}
-                              {savedAddress.numero_casa}
-                            </li>
-                          )}
-                          {savedAddress.manzano && (
-                            <li>
-                              <strong>Manzano / Bloque:</strong>{' '}
-                              {savedAddress.manzano}
-                            </li>
-                          )}
-                          {savedAddress.lat && savedAddress.lng && (
-                            <li>
-                              <strong>Coordenadas:</strong> ({savedAddress.lat},{' '}
-                              {savedAddress.lng})
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-
                       {tieneProductos && (
                         <>
                           <p className="form-note">
                             Si también tienes productos físicos, puedes ajustar
-                            el texto de envío aquí abajo (por ejemplo, agregar
-                            departamento, referencia extra, etc.).
+                            el texto de envío aquí abajo.
                           </p>
                           <textarea
                             className="form-input"
@@ -395,18 +357,20 @@ export default function Checkout() {
                   </select>
                 </div>
 
-                {/* Mostrar el componente de Stripe si se seleccionó tarjeta y ya se creó la orden */}
-                {metodoPago === 'tarjeta' && showStripePayment && createdOrderId && (
-                  <div style={{ marginTop: '1.5rem' }}>
-                    <StripePayment
-                      orderId={createdOrderId}
-                      total={total}
-                      onError={handlePaymentError}
-                    />
-                  </div>
-                )}
+                {/* Stripe */}
+                {metodoPago === 'tarjeta' &&
+                  showStripePayment &&
+                  createdOrderId && (
+                    <div style={{ marginTop: '1.5rem' }}>
+                      <StripePayment
+                        orderId={createdOrderId}
+                        total={total}
+                        onError={handlePaymentError}
+                      />
+                    </div>
+                  )}
 
-                {/* Mostrar el componente de QR si se seleccionó QR y ya se creó la orden */}
+                {/* QR */}
                 {metodoPago === 'qr' && createdOrderId && (
                   <div style={{ marginTop: '1.5rem' }}>
                     <QrPayment
@@ -427,17 +391,19 @@ export default function Checkout() {
               </fieldset>
 
               <div className="form-actions">
-                {/* Si ya se creó la orden y se mostró el pago, no mostrar el botón de confirmar */}
                 {!createdOrderId && (
                   <button
                     type="submit"
                     className="btn btn--primary btn--full"
                     disabled={loading || items.length === 0}
                   >
-                    {loading ? 'Procesando...' : 
-                     metodoPago === 'tarjeta' ? 'Continuar al pago con tarjeta' : 
-                     metodoPago === 'qr' ? 'Continuar al pago con QR' : 
-                     'Confirmar pedido'}
+                    {loading
+                      ? 'Procesando...'
+                      : metodoPago === 'tarjeta'
+                      ? 'Continuar al pago con tarjeta'
+                      : metodoPago === 'qr'
+                      ? 'Continuar al pago con QR'
+                      : 'Confirmar pedido'}
                   </button>
                 )}
 

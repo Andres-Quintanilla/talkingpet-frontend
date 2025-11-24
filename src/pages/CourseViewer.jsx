@@ -1,3 +1,4 @@
+// src/pages/CourseViewer.jsx
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -7,7 +8,7 @@ import { PlayCircle, CheckSquare } from 'lucide-react';
 import ReactPlayer from 'react-player';
 
 export default function CourseViewer() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,22 +21,37 @@ export default function CourseViewer() {
   useEffect(() => {
     const fetchCurso = async () => {
       if (!user) {
-        navigate('/login', { state: { returnTo: `/cursos/${id}` } });
+        navigate('/login', { state: { returnTo: `/mis-cursos/${id}/ver` } });
         return;
       }
+
       try {
         setLoading(true);
+        const numericId = Number(id);
 
-        const { data: misCursos } = await api.get('/api/courses/mine');
-        if (!misCursos.some((c) => c.curso_id === Number(id))) {
+        // 1) Verificar que el usuario esté inscrito en este curso
+        const { data: misCursos } = await api.get('/api/courses/mine', {
+          params: { _ts: Date.now() },
+        });
+
+        const puedeVer = Array.isArray(misCursos)
+          ? misCursos.some((c) => {
+              const cid = c.curso_id ?? c.id;
+              return Number(cid) === numericId;
+            })
+          : false;
+
+        if (!puedeVer) {
           setError('No estás inscrito en este curso.');
           setLoading(false);
           return;
         }
 
-        const { data: cursoData } = await api.get(`/api/courses/${id}`);
+        // 2) Traer la info completa del curso + contenido
+        const { data: cursoData } = await api.get(`/api/courses/${numericId}`);
         setCurso(cursoData);
 
+        // 3) Elegir contenido inicial
         let initial = null;
         if (cursoData.contenido && cursoData.contenido.length > 0) {
           const initialId = location.state?.initialContentId;
@@ -48,7 +64,6 @@ export default function CourseViewer() {
           }
         }
         setActiveContent(initial);
-
         setError(null);
       } catch (err) {
         console.error('Error fetching curso:', err);
@@ -57,6 +72,7 @@ export default function CourseViewer() {
         setLoading(false);
       }
     };
+
     fetchCurso();
   }, [id, user, navigate, location.state]);
 
@@ -95,31 +111,37 @@ export default function CourseViewer() {
         <aside className="course-viewer-sidebar">
           <h2 className="course-viewer-sidebar__title">{curso.titulo}</h2>
           <div className="course-content-list">
-            {curso.contenido.map((item) => (
-              <button
-                key={item.id}
-                className={`course-content-item ${
-                  activeContent?.id === item.id
-                    ? 'course-content-item--active'
-                    : ''
-                }`}
-                onClick={() => setActiveContent(item)}
-              >
-                <div className="course-content-item__icon">
-                  {item.tipo === 'video' ? (
-                    <PlayCircle size={20} />
-                  ) : (
-                    <CheckSquare size={20} />
-                  )}
-                </div>
-                <div className="course-content-item__title">
-                  {item.titulo}
-                </div>
-                <div className="course-content-item__duration">
-                  {item.duracion_minutos} min
-                </div>
-              </button>
-            ))}
+            {curso.contenido && curso.contenido.length > 0 ? (
+              curso.contenido.map((item) => (
+                <button
+                  key={item.id}
+                  className={`course-content-item ${
+                    activeContent?.id === item.id
+                      ? 'course-content-item--active'
+                      : ''
+                  }`}
+                  onClick={() => setActiveContent(item)}
+                >
+                  <div className="course-content-item__icon">
+                    {item.tipo === 'video' ? (
+                      <PlayCircle size={20} />
+                    ) : (
+                      <CheckSquare size={20} />
+                    )}
+                  </div>
+                  <div className="course-content-item__title">
+                    {item.titulo}
+                  </div>
+                  <div className="course-content-item__duration">
+                    {item.duracion_minutos} min
+                  </div>
+                </button>
+              ))
+            ) : (
+              <p className="form-note">
+                Este curso todavía no tiene contenido cargado.
+              </p>
+            )}
           </div>
         </aside>
 

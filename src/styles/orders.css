@@ -1,0 +1,156 @@
+/* src/styles/orders.css */
+
+.orders-page {
+  padding: 2.5rem 0 3.5rem;
+  background: var(--color-bg-soft, #f7f8fb);
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-top: 1rem;
+}
+
+/* Tarjeta de pedido */
+.order-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--color-border-soft, #e3e6ef);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.order-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.order-card__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.order-card__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text, #111827);
+  margin: 0;
+}
+
+.order-card__meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #6b7280);
+  margin: 0;
+}
+
+.order-card__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.order-card__total {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-primary, #2563eb);
+}
+
+/* Badge (si ya tienes estilos globales, esto solo los mejora un poco) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+.badge--success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+/* Tabla de items */
+.order-card__body {
+  border-top: 1px dashed var(--color-border-soft, #e5e7eb);
+  padding-top: 0.75rem;
+}
+
+.order-items-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.order-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+}
+
+.order-items-table thead tr {
+  background: var(--color-bg-soft, #f3f4f6);
+}
+
+.order-items-table th,
+.order-items-table td {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-soft, #e5e7eb);
+  white-space: nowrap;
+}
+
+.order-items-table th {
+  font-weight: 600;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.order-items-table td {
+  color: var(--color-text, #111827);
+}
+
+.order-items-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.order-item__name {
+  max-width: 280px;
+  white-space: normal;
+}
+
+/* Estados vacíos / loading ya los tienes de otras pantallas,
+   pero por si acaso les damos un poquito de margen aquí */
+.orders-page .empty-state,
+.orders-page .loading-state {
+  margin-top: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .order-card {
+    padding: 1.25rem 1.25rem;
+  }
+
+  .order-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .order-card__status {
+    align-items: flex-start;
+  }
+
+  .order-items-table {
+    min-width: 100%;
+  }
+}
