@@ -33,7 +33,10 @@
   letter-spacing: .2px;
 }
 .nav__brand strong {
-  color: var(--color-primary); /* Estilo de tu style.css */
+  color: var(--color-primary); /* Azul */
+}
+.nav__brand span {
+  color: var(--color-accent); /* Naranja */
 }
 
 .nav__menu {
