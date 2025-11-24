@@ -339,9 +339,11 @@ export default function Booking() {
   return (
     <>
       <SEO
-        title="Agendar servicio - TalkingPet"
-        description="Agenda servicios de baño, peluquería, veterinaria o adiestramiento para tu mascota."
-        url="http://localhost:5173/agendar"
+        title="Agendar Cita - Servicios Veterinarios y Peluquería"
+        description="Agenda servicios profesionales para tu mascota: baño a domicilio, peluquería canina, consulta veterinaria, adiestramiento. Elige fecha, hora y modalidad. Atención personalizada y precios competitivos."
+        url="/agendar"
+        keywords="agendar veterinaria, cita peluquería mascotas, baño domicilio, reserva servicios mascotas, agendar grooming, consulta veterinaria online"
+        type="website"
       />
 
       <main className="main">
