@@ -1,10 +1,18 @@
 /* src/styles/theme.css */
 :root {
-  --color-primary: #dc2268;
-  --color-primary-dark: #b91c56;
-  --color-primary-light: #fce9f0; /* Para fondos hover */
-  --color-accent: #fdb913;
-  --color-accent-dark: #e5a711;
+  /* Colores principales basados en la paleta */
+  --color-primary: #68a8de; /* Azul */
+  --color-primary-dark: #5290c7;
+  --color-primary-light: #e8f4fd;
+  
+  --color-accent: #dc911b; /* Naranja */
+  --color-accent-dark: #c47f16;
+  --color-accent-light: #fff4e0;
+  
+  --color-secondary: #68a8de; /* Azul secundario */
+  --color-secondary-dark: #5290c7;
+  --color-secondary-light: #e8f4fd;
+  
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -54,11 +62,17 @@
 
 /* --- Tema Oscuro --- */
 :root[data-theme='dark'] {
-  --color-primary: #e63a7a;
-  --color-primary-dark: #c42f67;
-  --color-primary-light: #2a1520;
-  --color-accent: #ffc54d;
-  --color-accent-dark: #e3ae3f;
+  --color-primary: #68a8de;
+  --color-primary-dark: #5290c7;
+  --color-primary-light: #1a2a3a;
+  
+  --color-accent: #dc911b;
+  --color-accent-dark: #c47f16;
+  --color-accent-light: #3d3020;
+  
+  --color-secondary: #68a8de;
+  --color-secondary-dark: #5290c7;
+  --color-secondary-light: #1a2a3a;
 
   --color-text: #eaeaea;
   --color-text-light: #bdbdbd;
