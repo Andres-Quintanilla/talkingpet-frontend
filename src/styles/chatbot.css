@@ -291,6 +291,55 @@
   cursor: not-allowed;
 }
 
+/* Links de IA */
+.chatbot-message__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chatbot-link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--color-primary, #dc2268);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(220, 34, 104, 0.2);
+}
+
+.chatbot-link-button:hover {
+  background: #c01d5c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 34, 104, 0.3);
+}
+
+.chatbot-link-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Mensaje del sistema */
+.chatbot-message--system .chatbot-message__content {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-left: 3px solid #1976d2;
+  font-size: 0.9rem;
+}
+
+[data-theme='dark'] .chatbot-message--system .chatbot-message__content {
+  background: #1e3a5f;
+  color: #64b5f6;
+  border-left-color: #64b5f6;
+}
+
 /* Footer */
 .chatbot-footer {
   padding: 10px 20px;
