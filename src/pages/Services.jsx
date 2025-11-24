@@ -75,9 +75,11 @@ export default function Services() {
   return (
     <>
       <SEO
-        title="Nuestros Servicios - TalkingPet"
-        description="Servicios profesionales para mascotas: baño, peluquería, veterinaria y adiestramiento en Santa Cruz, Bolivia."
-        url="http://localhost:5173/servicios"
+        title="Servicios Veterinarios y Peluquería - A Domicilio"
+        description="Servicios profesionales para mascotas en Bolivia: veterinaria con personal certificado, peluquería canina, baño a domicilio, adiestramiento profesional. Precios competitivos y atención de calidad. Agenda tu cita."
+        url="/servicios"
+        keywords="veterinaria Bolivia, peluquería canina domicilio, baño mascotas domicilio, adiestramiento perros, servicios mascotas profesionales, veterinario certificado, grooming mascotas"
+        type="website"
       />
 
       <div className="services-page">

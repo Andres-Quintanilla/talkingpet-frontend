@@ -140,9 +140,11 @@ export default function Products() {
   return (
     <>
       <SEO
-        title="Productos - TalkingPet"
-        description="Nuestros productos para mascotas: alimento, juguetes, higiene, camitas y más."
-        url="http://localhost:5173/productos"
+        title="Productos para Mascotas - Alimento, Accesorios y Más"
+        description="Productos certificados para mascotas en Bolivia: alimento premium, juguetes, accesorios de higiene, camitas, comederos y más. Calidad garantizada y precios competitivos. Envíos a domicilio."
+        url="/productos"
+        keywords="productos mascotas Bolivia, alimento perros gatos, juguetes mascotas, accesorios higiene mascotas, camitas perros, comederos mascotas, productos certificados mascotas"
+        type="website"
       />
 
       <div className="products-page">

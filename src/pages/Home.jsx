@@ -154,12 +154,68 @@ export default function Home() {
         servicios[(currentService + 2) % servicios.length]
     ] : [];
 
+    // Structured Data para la página principal
+    const homeStructuredData = {
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: 'TalkingPet',
+        description: 'Productos y servicios integrales para el cuidado de mascotas. Veterinaria, peluquería, adiestramiento y más.',
+        url: 'http://localhost:5173',
+        telephone: '+591-XXXXXXXX',
+        address: {
+            '@type': 'PostalAddress',
+            addressCountry: 'BO',
+            addressLocality: 'Santa Cruz',
+        },
+        openingHours: 'Mo-Sa 08:00-19:00',
+        priceRange: '$$',
+        image: 'http://localhost:5173/imagenes/logo-talkingpet.svg',
+        aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: '4.8',
+            reviewCount: '150',
+        },
+        hasOfferCatalog: {
+            '@type': 'OfferCatalog',
+            name: 'Servicios para Mascotas',
+            itemListElement: [
+                {
+                    '@type': 'Offer',
+                    itemOffered: {
+                        '@type': 'Service',
+                        name: 'Servicios Veterinarios',
+                        description: 'Consultas veterinarias con personal certificado',
+                    },
+                },
+                {
+                    '@type': 'Offer',
+                    itemOffered: {
+                        '@type': 'Service',
+                        name: 'Peluquería y Baño',
+                        description: 'Servicios de grooming a domicilio',
+                    },
+                },
+                {
+                    '@type': 'Offer',
+                    itemOffered: {
+                        '@type': 'Service',
+                        name: 'Adiestramiento',
+                        description: 'Entrenamiento profesional para mascotas',
+                    },
+                },
+            ],
+        },
+    };
+
     return (
         <>
             <SEO
-                title="Bienvenido a TalkingPet - Todo para tu Mascota"
-                description="Encuentra todo lo que necesitas para tu mascota en un solo lugar: productos de calidad, servicios profesionales y el mejor trato."
-                url="http://localhost:5173/"
+                title="TalkingPet - Todo para tu Mascota en Bolivia"
+                description="Productos certificados, servicios veterinarios profesionales, peluquería canina, adiestramiento y más. Innovación con tapetes de botones. Servicios a domicilio con precios competitivos. Plataforma integral física y online."
+                url="/"
+                keywords="mascotas Bolivia, veterinaria Bolivia, peluquería canina, productos mascotas, adiestramiento perros, tapetes comunicación mascotas, servicios domicilio mascotas, tienda mascotas online, cuidado integral mascotas"
+                type="website"
+                structuredData={homeStructuredData}
             />
 
             <section className="hero">

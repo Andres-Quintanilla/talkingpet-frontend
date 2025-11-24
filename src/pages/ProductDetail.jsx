@@ -30,13 +30,41 @@ export default function ProductDetail() {
     add(item, qty);
   };
 
+  // Structured Data para el producto
+  const productStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.nombre,
+    description: p.descripcion || 'Producto para mascotas de calidad',
+    image: imageUrl.startsWith('http') ? imageUrl : `http://localhost:5173${imageUrl}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'TalkingPet',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: p.precio,
+      priceCurrency: 'BOB',
+      availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      url: `http://localhost:5173/productos/${p.id}`,
+    },
+    aggregateRating: p.calificacion ? {
+      '@type': 'AggregateRating',
+      ratingValue: p.calificacion,
+      reviewCount: p.total_reviews || 1,
+    } : undefined,
+  };
+
   return (
     <>
       <SEO
-        title={p.nombre}
-        description={p.descripcion?.slice(0, 150) || 'Producto'}
-        url={`http://localhost:5173/productos/${p.id}`}
+        title={`${p.nombre} - Productos para Mascotas`}
+        description={p.descripcion?.slice(0, 155) || `${p.nombre} - Producto de calidad para tu mascota. Disponible en TalkingPet Bolivia.`}
+        url={`/productos/${p.id}`}
         image={imageUrl}
+        type="product"
+        keywords={`${p.nombre}, ${p.categoria || 'productos mascotas'}, comprar ${p.nombre}, ${p.nombre} Bolivia`}
+        structuredData={productStructuredData}
       />
 
       <div className="container product-detail">
