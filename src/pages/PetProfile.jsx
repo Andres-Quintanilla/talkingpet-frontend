@@ -7,6 +7,7 @@ export default function PetProfile() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [__, setError] = useState(null);
 
   useEffect(() => {
     api

@@ -3,20 +3,16 @@ import api from '../../api/axios';
 import { formatCurrency } from '../../utils/format';
 import '../../styles/admin-dashboard.css';
 
-
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [summary, setSummary] = useState({
     totals: {
-      users: 0,
-      clients: 0,
-      employees: 0,
-      admins: 0,
       products: 0,
       services: 0,
       courses: 0,
       orders: 0,
+      ingresos: 0,
       bookings: 0,
     },
     latestOrders: [],
@@ -28,59 +24,44 @@ export default function AdminDashboard() {
 
     const load = async () => {
       try {
+        // 🔥 Solo usamos endpoints que sí existen en tu backend v3
         const [
-          usersRes,
           productsRes,
           servicesRes,
           coursesRes,
-          ordersRes,
+          summaryRes,
           bookingsRes,
         ] = await Promise.all([
-          api.get('/api/users'),
           api.get('/api/products'),
           api.get('/api/services'),
           api.get('/api/courses'),
-          api.get('/api/orders'),
+          api.get('/api/orders/admin/summary'),
           api.get('/api/bookings/all'),
         ]);
 
         if (!mounted) return;
 
-        const usersData = usersRes.data;
-        const usersRaw = Array.isArray(usersData)
-          ? usersData
-          : usersData?.items || [];
-
-        const productsData = productsRes.data;
-        const products = Array.isArray(productsData)
-          ? productsData
-          : productsData?.items || [];
-
+        const products = productsRes.data || [];
         const services = servicesRes.data || [];
         const courses = coursesRes.data || [];
-        const orders = ordersRes.data || [];
         const bookings = bookingsRes.data || [];
 
-        const clientsCount = usersRaw.filter((u) => u.rol === 'cliente').length;
-        const adminsCount = usersRaw.filter((u) => u.rol === 'admin').length;
-        const employeesCount = usersRaw.filter(
-          (u) => u.rol && u.rol.startsWith('empleado_')
-        ).length;
+        const kpi = summaryRes.data.kpis || {};
+        const recientes = summaryRes.data.recientes || [];
+
+        const latestBookings = bookings.slice(0, 5);
 
         setSummary({
           totals: {
-            users: usersRaw.length,
-            clients: clientsCount,
-            employees: employeesCount,
-            admins: adminsCount,
             products: products.length,
             services: services.length,
             courses: courses.length,
-            orders: orders.length,
+            orders: Number(kpi.total_pedidos || 0),
+            ingresos: Number(kpi.total_ingresos || 0),
             bookings: bookings.length,
           },
-          latestOrders: orders.slice(0, 5),
-          latestBookings: bookings.slice(0, 5),
+          latestOrders: recientes,
+          latestBookings,
         });
       } catch (e) {
         console.error('Error cargando dashboard admin', e);
@@ -91,7 +72,6 @@ export default function AdminDashboard() {
     };
 
     load();
-
     return () => {
       mounted = false;
     };
@@ -103,50 +83,21 @@ export default function AdminDashboard() {
     <div className="admin-main">
       <header className="admin-main__header">
         <h1 className="admin-main__title">Dashboard</h1>
-        <p className="admin-main__subtitle">
-          Resumen general de TalkingPet.
-        </p>
+        <p className="admin-main__subtitle">Resumen general de TalkingPet.</p>
       </header>
 
       {loading && (
-        <div className="admin-dashboard__loading">
-          Cargando resumen...
-        </div>
+        <div className="admin-dashboard__loading">Cargando resumen...</div>
       )}
 
       {error && !loading && (
-        <div className="admin-dashboard__error">
-          {error}
-        </div>
+        <div className="admin-dashboard__error">{error}</div>
       )}
 
       {!loading && !error && (
         <div className="admin-dashboard">
+          {/* KPIs */}
           <section className="admin-kpi-grid">
-            <article className="admin-kpi-card">
-              <p className="admin-kpi-label">Clientes</p>
-              <p className="admin-kpi-value">{totals.clients}</p>
-              <p className="admin-kpi-sub">
-                Clientes registrados en la plataforma
-              </p>
-            </article>
-
-            <article className="admin-kpi-card">
-              <p className="admin-kpi-label">Empleados</p>
-              <p className="admin-kpi-value">{totals.employees}</p>
-              <p className="admin-kpi-sub">
-                Usuarios con rol de empleado
-              </p>
-            </article>
-
-            <article className="admin-kpi-card">
-              <p className="admin-kpi-label">Administradores</p>
-              <p className="admin-kpi-value">{totals.admins}</p>
-              <p className="admin-kpi-sub">
-                Cuentas con acceso al panel admin
-              </p>
-            </article>
-
             <article className="admin-kpi-card">
               <p className="admin-kpi-label">Productos activos</p>
               <p className="admin-kpi-value">{totals.products}</p>
@@ -164,34 +115,38 @@ export default function AdminDashboard() {
             <article className="admin-kpi-card">
               <p className="admin-kpi-label">Cursos</p>
               <p className="admin-kpi-value">{totals.courses}</p>
-              <p className="admin-kpi-sub">
-                Cursos virtuales / talleres
-              </p>
+              <p className="admin-kpi-sub">Cursos virtuales / talleres</p>
             </article>
 
             <article className="admin-kpi-card">
-              <p className="admin-kpi-label">Pedidos</p>
+              <p className="admin-kpi-label">Pedidos totales</p>
               <p className="admin-kpi-value">{totals.orders}</p>
-              <p className="admin-kpi-sub">
-                Pedidos registrados en el sistema
-              </p>
+              <p className="admin-kpi-sub">Pedidos registrados en el sistema</p>
             </article>
 
             <article className="admin-kpi-card">
               <p className="admin-kpi-label">Citas</p>
               <p className="admin-kpi-value">{totals.bookings}</p>
-              <p className="admin-kpi-sub">
-                Citas agendadas en total
+              <p className="admin-kpi-sub">Citas agendadas en total</p>
+            </article>
+
+            <article className="admin-kpi-card">
+              <p className="admin-kpi-label">Ingresos</p>
+              <p className="admin-kpi-value">
+                {formatCurrency(totals.ingresos)}
               </p>
+              <p className="admin-kpi-sub">Total de pedidos pagados</p>
             </article>
           </section>
 
+          {/* Últimos pedidos + Últimas citas */}
           <section className="admin-dashboard__grid">
+            {/* Últimos pedidos */}
             <article className="admin-panel">
               <header className="admin-panel__header">
                 <h2 className="admin-panel__title">Últimos pedidos</h2>
                 <p className="admin-panel__subtitle">
-                  Pedidos más recientes.
+                  Pedidos más recientes registrados en la plataforma.
                 </p>
               </header>
 
@@ -221,11 +176,12 @@ export default function AdminDashboard() {
               )}
             </article>
 
+            {/* Últimas citas */}
             <article className="admin-panel">
               <header className="admin-panel__header">
-                <h2 className="admin-panel__title">Citas recientes</h2>
+                <h2 className="admin-panel__title">Últimas citas</h2>
                 <p className="admin-panel__subtitle">
-                  Últimas citas agendadas.
+                  Citas más recientemente agendadas.
                 </p>
               </header>
 
@@ -244,7 +200,8 @@ export default function AdminDashboard() {
                         </p>
                         <p className="admin-panel__list-secondary">
                           {b.fecha}{' '}
-                          {b.hora?.slice(0, 5)} · Estado: {b.estado}
+                          {b.hora ? b.hora.slice(0, 5) : ''} · Estado:{' '}
+                          {b.estado}
                         </p>
                       </div>
                     </li>

@@ -47,7 +47,8 @@ export default function MyOrders() {
           <div className="container">
             <h1 className="page-header__title">Mis Pedidos</h1>
             <p className="page-header__subtitle">
-              Aquí encontrarás todos los productos, servicios y cursos que has comprado.
+              Aquí encontrarás todos los productos, servicios y cursos que has
+              comprado.
             </p>
           </div>
         </section>
@@ -81,6 +82,7 @@ export default function MyOrders() {
                 !error &&
                 orders.map((order) => (
                   <article key={order.id} className="order-card">
+                    {/* CABECERA DEL PEDIDO */}
                     <header className="order-card__header">
                       <div className="order-card__title-block">
                         <h2 className="order-card__title">
@@ -99,12 +101,16 @@ export default function MyOrders() {
                         <span className="badge badge--success">
                           {order.estado || 'pagado'}
                         </span>
+                        <span className="order-card__total-label">
+                          Total pagado
+                        </span>
                         <span className="order-card__total">
                           {formatCurrency(order.total || 0)}
                         </span>
                       </div>
                     </header>
 
+                    {/* LISTA DE ITEMS */}
                     <div className="order-card__body">
                       <div className="order-items-wrapper">
                         <table
@@ -113,32 +119,65 @@ export default function MyOrders() {
                         >
                           <thead>
                             <tr>
-                              <th>Tipo</th>
-                              <th>Item</th>
+                              <th>Producto</th>
                               <th>Cantidad</th>
                               <th>Precio</th>
                               <th>Subtotal</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {(order.items || []).map((it) => (
-                              <tr key={it.id}>
-                                <td>{formatItemType(it.tipo_item)}</td>
-                                <td className="order-item__name">{it.nombre}</td>
-                                <td>{it.qty}</td>
-                                <td>
-                                  {formatCurrency(it.precio_unitario || 0)}
-                                </td>
-                                <td>
-                                  {formatCurrency(
-                                    (it.precio_unitario || 0) *
-                                      (it.qty || 1)
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
+                            {(order.items || []).map((it) => {
+                              // Intentamos distintos nombres de campo para la imagen
+                              const thumbnail =
+                                it.imagen_url ||
+                                it.imagen ||
+                                it.portada_url ||
+                                '/static/products/default-product.jpg';
+
+                              return (
+                                <tr key={it.id}>
+                                  <td className="order-item__product">
+                                    <div className="order-item__thumb">
+                                      <img
+                                        src={thumbnail}
+                                        alt={it.nombre}
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                    <div className="order-item__info">
+                                      <span className="order-item__name">
+                                        {it.nombre}
+                                      </span>
+                                      <span className="order-item__type">
+                                        {formatItemType(it.tipo_item)}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td>{it.qty}</td>
+                                  <td>
+                                    {formatCurrency(it.precio_unitario || 0)}
+                                  </td>
+                                  <td>
+                                    {formatCurrency(
+                                      (it.precio_unitario || 0) *
+                                        (it.qty || 1)
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
+                      </div>
+
+                      {/* FOOTER CON RESUMEN (POR SI QUIERES DESTACAR MÁS) */}
+                      <div className="order-card__footer">
+                        <span className="order-card__footer-label">
+                          Total del pedido
+                        </span>
+                        <span className="order-card__footer-total">
+                          {formatCurrency(order.total || 0)}
+                        </span>
                       </div>
                     </div>
                   </article>

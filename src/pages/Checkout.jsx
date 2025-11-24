@@ -38,7 +38,8 @@ export default function Checkout() {
 
   const tieneServicios = items.some((it) => it.tipo_item === 'servicio');
   const tieneProductos = items.some((it) => it.tipo_item === 'producto');
-  const soloCursos = items.length > 0 && items.every((it) => it.tipo_item === 'curso');
+  const soloCursos =
+    items.length > 0 && items.every((it) => it.tipo_item === 'curso');
 
   // === Cargar dirección habitual al entrar a Checkout ===
   useEffect(() => {
@@ -93,7 +94,16 @@ export default function Checkout() {
   // Pago con tarjeta / QR exitoso
   const handlePaymentSuccess = async () => {
     try {
-      // Para tarjeta / QR inscribimos aquí (por si el backend no lo hizo)
+      // 1) Marcar pedido como pagado en el backend
+      if (createdOrderId) {
+        try {
+          await api.post(`/api/orders/${createdOrderId}/mark-paid`);
+        } catch (err) {
+          console.error('Error marcando pedido como pagado:', err);
+        }
+      }
+
+      // 2) Auto-inscribir cursos (por si el backend no lo hizo)
       if (lastOrderCourseIds.length > 0) {
         await autoEnrollCourses(lastOrderCourseIds);
       }
@@ -365,6 +375,7 @@ export default function Checkout() {
                       <StripePayment
                         orderId={createdOrderId}
                         total={total}
+                        onSuccess={handlePaymentSuccess}
                         onError={handlePaymentError}
                       />
                     </div>

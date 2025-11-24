@@ -50,20 +50,26 @@
   margin: 0;
 }
 
+/* Estado y total arriba a la derecha */
 .order-card__status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.35rem;
+  gap: 0.3rem;
+}
+
+.order-card__total-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #6b7280);
 }
 
 .order-card__total {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--color-primary, #2563eb);
 }
 
-/* Badge (si ya tienes estilos globales, esto solo los mejora un poco) */
+/* Badge */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -80,10 +86,13 @@
   color: #059669;
 }
 
-/* Tabla de items */
+/* Cuerpo de la tarjeta */
 .order-card__body {
   border-top: 1px dashed var(--color-border-soft, #e5e7eb);
   padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .order-items-wrapper {
@@ -91,6 +100,7 @@
   overflow-x: auto;
 }
 
+/* Tabla de items */
 .order-items-table {
   width: 100%;
   border-collapse: collapse;
@@ -123,13 +133,70 @@
   border-bottom: none;
 }
 
-.order-item__name {
-  max-width: 280px;
-  white-space: normal;
+/* Celda de producto con imagen + info */
+.order-item__product {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 260px;
 }
 
-/* Estados vacíos / loading ya los tienes de otras pantallas,
-   pero por si acaso les damos un poquito de margen aquí */
+.order-item__thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.order-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.order-item__name {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.order-item__type {
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--color-primary, #2563eb);
+  width: fit-content;
+}
+
+/* Footer con resumen de total */
+.order-card__footer {
+  margin-top: 0.25rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.order-card__footer-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #6b7280);
+}
+
+.order-card__footer-total {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-primary, #2563eb);
+}
+
+/* Estados vacíos / loading */
 .orders-page .empty-state,
 .orders-page .loading-state {
   margin-top: 2rem;
