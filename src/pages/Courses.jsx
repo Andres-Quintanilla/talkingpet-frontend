@@ -71,9 +71,11 @@ export default function Courses() {
   return (
     <>
       <SEO
-        title="Cursos - TalkingPet"
-        description="Cursos para dueños de mascotas: adiestramiento básico, primeros auxilios, nutrición canina y bienestar felino en Santa Cruz, Bolivia."
-        url="http://localhost:5173/cursos"
+        title="Cursos de Adiestramiento y Cuidado de Mascotas"
+        description="Cursos profesionales para dueños de mascotas en Bolivia: adiestramiento canino, primeros auxilios veterinarios, nutrición animal, cuidados especiales. Modalidad presencial y virtual. Inscripciones abiertas."
+        url="/cursos"
+        keywords="cursos adiestramiento perros, cursos mascotas Bolivia, primeros auxilios mascotas, nutrición canina, cursos cuidado mascotas, entrenamiento perros, educación canina"
+        type="website"
       />
 
       {/* Cabecera tipo sección (la puedes dejar igual) */}

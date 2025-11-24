@@ -32,6 +32,7 @@ import CourseViewer from './pages/CourseViewer';
 import OrderTrack from './pages/OrderTrack';
 import PetList from './pages/PetList';
 import PetProfile from './pages/PetProfile';
+import VaccinationCard from './pages/VaccinationCard';
 import MyOrders from './pages/MyOrders';
 import MyBookings from './pages/MyBookings';
 
@@ -180,6 +181,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <PetProfile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/mis-mascotas/:petId/cartilla"
+            element={
+              <RequireAuth>
+                <VaccinationCard />
               </RequireAuth>
             }
           />

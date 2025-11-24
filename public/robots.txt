@@ -1,0 +1,24 @@
+# TalkingPet - Robots.txt
+User-agent: *
+Allow: /
+Allow: /productos
+Allow: /servicios
+Allow: /cursos
+Allow: /agendar
+
+# Bloquear áreas privadas
+Disallow: /admin
+Disallow: /empleado
+Disallow: /carrito
+Disallow: /checkout
+Disallow: /mi-cuenta
+Disallow: /mis-pedidos
+Disallow: /mis-reservas
+Disallow: /mis-cursos
+Disallow: /mascotas
+
+# Crawl-delay
+Crawl-delay: 10
+
+# Sitemap
+Sitemap: http://localhost:5173/sitemap.xml
