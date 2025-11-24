@@ -1,3 +1,4 @@
+// src/pages/CourseDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -7,7 +8,7 @@ import { formatCurrency } from '../utils/format';
 import { CheckCircle, Clock, Users, PlayCircle, Lock } from 'lucide-react';
 
 export default function CourseDetail() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -22,24 +23,34 @@ export default function CourseDetail() {
       try {
         setLoading(true);
 
+        // 1) SIEMPRE traer el curso primero
         const { data } = await api.get(`/api/courses/${id}`);
         setCurso(data);
-
-        if (user) {
-          const { data: misCursos } = await api.get('/api/courses/mine');
-          if (misCursos.some((c) => c.curso_id === Number(id))) {
-            setIsEnrolled(true);
-          }
-        }
-
-        setError(null);
       } catch (err) {
         console.error('Error fetching curso:', err);
         setError('No se pudo cargar el curso.');
-      } finally {
         setLoading(false);
+        return;
       }
+
+      // 2) Si hay usuario, verificar inscripción
+      if (user) {
+        try {
+          const { data: misCursos } = await api.get('/api/courses/mine');
+
+          if (Array.isArray(misCursos)) {
+            if (misCursos.some((c) => c.curso_id === Number(id))) {
+              setIsEnrolled(true);
+            }
+          }
+        } catch (err) {
+          console.warn('Error cargando /mine, pero no se rompe:', err);
+        }
+      }
+
+      setLoading(false);
     };
+
     fetchCurso();
   }, [id, user]);
 
@@ -104,13 +115,9 @@ export default function CourseDetail() {
       <div className="breadcrumb-wrapper">
         <div className="container">
           <nav className="breadcrumb" aria-label="Ruta de navegación">
-            <Link to="/" className="breadcrumb__link">
-              Inicio
-            </Link>
+            <Link to="/" className="breadcrumb__link">Inicio</Link>
             <span className="breadcrumb__separator">/</span>
-            <Link to="/cursos" className="breadcrumb__link">
-              Cursos
-            </Link>
+            <Link to="/cursos" className="breadcrumb__link">Cursos</Link>
             <span className="breadcrumb__separator">/</span>
             <span className="breadcrumb__current">{curso.titulo}</span>
           </nav>
@@ -120,17 +127,18 @@ export default function CourseDetail() {
       <div className="course-detail-layout container">
         <div className="course-detail-main">
           <h1 className="course-detail__title">{curso.titulo}</h1>
+
           <p className="course-detail__instructor">
             Por: <strong>{curso.instructor_nombre || 'TalkingPet'}</strong>
           </p>
-          <p className="course-detail__description">
-            {curso.descripcion}
-          </p>
+
+          <p className="course-detail__description">{curso.descripcion}</p>
 
           <h2 className="course-detail__subtitle">
             {isVirtual ? 'Contenido del Curso' : 'Detalles del Taller'}
           </h2>
 
+          {/* CONTENIDO */}
           {isVirtual ? (
             <div className="course-content-list">
               {contenido.length === 0 && (
@@ -143,20 +151,16 @@ export default function CourseDetail() {
                 <div key={item.id} className="course-content-item">
                   <div className="course-content-item__icon">
                     {isEnrolled ? (
-                      <PlayCircle
-                        size={20}
-                        color="var(--color-primary)"
-                      />
+                      <PlayCircle size={20} color="var(--color-primary)" />
                     ) : (
-                      <Lock
-                        size={20}
-                        color="var(--color-text-light)"
-                      />
+                      <Lock size={20} color="var(--color-text-light)" />
                     )}
                   </div>
+
                   <div className="course-content-item__title">
                     {index + 1}. {item.titulo}
                   </div>
+
                   <div className="course-content-item__duration">
                     {item.duracion_minutos} min
                   </div>
@@ -184,19 +188,15 @@ export default function CourseDetail() {
                 <div className="course-content-item__title">
                   <strong>Fecha:</strong>{' '}
                   {curso.fecha_inicio_presencial
-                    ? new Date(
-                        curso.fecha_inicio_presencial
-                      ).toLocaleDateString('es-ES', {
-                        timeZone: 'UTC',
-                      })
+                    ? new Date(curso.fecha_inicio_presencial).toLocaleDateString('es-BO')
                     : 'Por confirmar'}
                 </div>
               </div>
+
               <div className="course-content-item">
                 <div className="course-content-item__icon">📍</div>
                 <div className="course-content-item__title">
-                  <strong>Lugar:</strong> Local TalkingPet (Av.
-                  Ejemplo #123)
+                  <strong>Lugar:</strong> Local TalkingPet (Av. Ejemplo #123)
                 </div>
               </div>
             </div>
@@ -210,9 +210,7 @@ export default function CourseDetail() {
             </div>
 
             <div className="course-buy-box__price">
-              {curso.precio != null
-                ? formatCurrency(curso.precio)
-                : 'Gratis'}
+              {curso.precio != null ? formatCurrency(curso.precio) : 'Gratis'}
             </div>
 
             {isEnrolled ? (
@@ -241,10 +239,12 @@ export default function CourseDetail() {
                 <CheckCircle size={16} />
                 <span>Modalidad {curso.modalidad}</span>
               </div>
+
               <div className="meta-item">
                 <Clock size={16} />
                 <span>Acceso de por vida</span>
               </div>
+
               <div className="meta-item">
                 <Users size={16} />
                 <span>
