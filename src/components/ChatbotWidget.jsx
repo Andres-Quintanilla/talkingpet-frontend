@@ -1,11 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { MessageCircle, X, Send, ThumbsUp, ThumbsDown, ShoppingCart, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import '../styles/chatbot.css';
 
 export default function ChatbotWidget() {
   const { user } = useAuth();
+  const { addItem } = useCart();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -74,8 +78,17 @@ export default function ChatbotWidget() {
           role: 'assistant',
           content: data.reply,
           messageId: data.messageId,
+          actions: data.actions,
+          links: data.links,
         },
       ]);
+
+      // Ejecutar acciones automáticas si las hay
+      if (data.actions && Array.isArray(data.actions)) {
+        for (const action of data.actions) {
+          await handleAction(action);
+        }
+      }
     } catch (error) {
       console.error('Error enviando mensaje:', error);
       setMessages((prev) => [
@@ -88,6 +101,48 @@ export default function ChatbotWidget() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAction = async (action) => {
+    if (action.type === 'ADD_TO_CART') {
+      try {
+        // Obtener información del producto
+        const { data: product } = await api.get(`/api/products/${action.productId}`);
+        
+        // Agregar al carrito
+        addItem({
+          id: product.id,
+          nombre: product.nombre,
+          precio: product.precio,
+          imagen_url: product.imagen_url,
+          tipo_item: 'producto',
+        }, action.quantity || 1);
+
+        // Mostrar mensaje de confirmación
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'system',
+            content: `✅ ${product.nombre} agregado al carrito (${action.quantity || 1}x)`,
+          },
+        ]);
+      } catch (error) {
+        console.error('Error agregando al carrito:', error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'system',
+            content: '❌ No pude agregar el producto al carrito. Intenta nuevamente.',
+          },
+        ]);
+      }
+    }
+  };
+
+  const handleLinkClick = (url) => {
+    const path = url.replace(window.location.origin, '');
+    navigate(path);
+    setIsOpen(false);
   };
 
   const sendFeedback = async (messageId, isUseful) => {
@@ -178,6 +233,23 @@ export default function ChatbotWidget() {
               >
                 <div className="chatbot-message__content">{msg.content}</div>
 
+                {/* Links generados por la IA */}
+                {msg.links && msg.links.length > 0 && (
+                  <div className="chatbot-message__links">
+                    {msg.links.map((link, linkIdx) => (
+                      <button
+                        key={linkIdx}
+                        className="chatbot-link-button"
+                        onClick={() => handleLinkClick(link.url)}
+                      >
+                        <ExternalLink size={14} />
+                        {link.path.replace('/', '').replace('-', ' ') || 'Ver más'}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Feedback para mensajes del asistente */}
                 {msg.role === 'assistant' && msg.messageId && (
                   <div className="chatbot-message__feedback">
                     <button
