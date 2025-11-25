@@ -5,18 +5,16 @@ import api from '../api/axios';
 import { formatCurrency } from '../utils/format';
 
 const courseIcons = {
-  presencial: '🐾',
-  virtual: '💻',
+  presencial: '',
+  virtual: '',
 };
 
 export default function Courses() {
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // búsqueda por texto
   const [q, setQ] = useState('');
 
-  // filtros por modalidad
   const [modalidades, setModalidades] = useState({
     virtual: false,
     presencial: false,
@@ -39,12 +37,11 @@ export default function Courses() {
     fetchCursos();
   }, []);
 
-  // aplica filtros (texto + modalidad)
   const filtrados = useMemo(() => {
     const term = q.trim().toLowerCase();
     const activos = Object.entries(modalidades)
       .filter(([, v]) => v)
-      .map(([k]) => k); // ['virtual', 'presencial']
+      .map(([k]) => k); 
 
     return cursos.filter((c) => {
       const titulo = (c.titulo || '').toLowerCase();
@@ -78,7 +75,6 @@ export default function Courses() {
         type="website"
       />
 
-      {/* Cabecera tipo sección (la puedes dejar igual) */}
       <section className="page-header">
         <div className="container">
           <h1 className="page-header__title">Cursos de Capacitación</h1>
@@ -88,11 +84,9 @@ export default function Courses() {
         </div>
       </section>
 
-      {/* Layout igual que Productos/Servicios: sidebar + contenido */}
       <section className="courses-page">
         <div className="container">
           <div className="products-page__layout">
-            {/* SIDEBAR DE FILTROS */}
             <aside
               className="sidebar"
               role="complementary"
@@ -156,7 +150,6 @@ export default function Courses() {
               </div>
             </aside>
 
-            {/* LISTADO DE CURSOS */}
             <div className="products-content">
               <div className="products-header">
                 <p className="products-header__results">

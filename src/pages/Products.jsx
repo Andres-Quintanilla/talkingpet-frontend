@@ -6,6 +6,17 @@ import ProductCard from '../components/ProductCard';
 
 const PAGE_SIZE = Number(import.meta.env.VITE_PAGE_SIZE || 12);
 
+function normalizeCategory(value) {
+  if (!value) return '';
+  return String(value).trim().toLowerCase();
+}
+
+function formatCategoryLabel(value) {
+  const v = normalizeCategory(value);
+  if (!v) return '';
+  return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
 export default function Products() {
   const [data, setData] = useState({
     items: [],
@@ -15,16 +26,14 @@ export default function Products() {
   });
   const [loading, setLoading] = useState(true);
 
-  // búsqueda por texto
   const [q, setQ] = useState('');
 
-  // categorías seleccionadas (se llenan dinámicamente)
+
   const [cats, setCats] = useState({});
 
   const [sp, setSp] = useSearchParams();
   const pageFromUrl = Number(sp.get('page') || 1);
 
-  // === Cargar productos desde la API ===
   useEffect(() => {
     let isMounted = true;
 
@@ -67,12 +76,13 @@ export default function Products() {
     };
   }, [pageFromUrl]);
 
-  // === Construir lista de categorías a partir de lo que viene del admin ===
   useEffect(() => {
     const categoriesFromData = Array.from(
       new Set(
         (data.items || [])
-          .map((p) => (p.categoria || p.categoria_nombre || '').trim())
+          .map((p) =>
+            normalizeCategory(p.categoria || p.categoria_nombre || '')
+          )
           .filter(Boolean)
       )
     );
@@ -80,14 +90,12 @@ export default function Products() {
     setCats((prev) => {
       const next = { ...prev };
 
-      // Aseguramos que todas las categorías existentes tengan una entrada
       categoriesFromData.forEach((c) => {
         if (!(c in next)) {
           next[c] = false;
         }
       });
 
-      // Opcional: eliminar categorías que ya no existan en los productos
       Object.keys(next).forEach((c) => {
         if (!categoriesFromData.includes(c)) {
           delete next[c];
@@ -98,19 +106,20 @@ export default function Products() {
     });
   }, [data.items]);
 
-  // === Productos filtrados (búsqueda + categorías + estado publicado) ===
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     const activeCats = Object.entries(cats)
       .filter(([, v]) => v)
-      .map(([k]) => k);
+      .map(([k]) => k); 
 
     return data.items
       .filter((p) => p.estado === 'publicado')
       .filter((p) => {
         const nombre = (p.nombre || '').toLowerCase();
         const desc = (p.descripcion || '').toLowerCase();
-        const cat = (p.categoria || p.categoria_nombre || '').trim();
+        const cat = normalizeCategory(
+          p.categoria || p.categoria_nombre || ''
+        );
 
         const matchQ =
           !query || nombre.includes(query) || desc.includes(query);
@@ -152,7 +161,6 @@ export default function Products() {
           <h1 className="products-page__title">Nuestros Productos</h1>
 
           <div className="products-page__layout">
-            {/* SIDEBAR DE FILTROS */}
             <aside
               className="sidebar"
               role="complementary"
@@ -189,7 +197,7 @@ export default function Products() {
                         checked={cats[k]}
                         onChange={() => toggleCat(k)}
                       />
-                      {k}
+                      {formatCategoryLabel(k)}
                     </label>
                   ))}
                 </div>
@@ -199,7 +207,7 @@ export default function Products() {
                 <button
                   className="btn btn--primary btn--full"
                   type="button"
-                  onClick={() => setPage(1)} // solo reinicia a página 1
+                  onClick={() => setPage(1)} 
                 >
                   Aplicar filtros
                 </button>
@@ -210,7 +218,6 @@ export default function Products() {
               </div>
             </aside>
 
-            {/* LISTADO DE PRODUCTOS */}
             <div className="products-content">
               <div className="products-header">
                 <p className="products-header__results">

@@ -18,7 +18,6 @@ export default function Register() {
     if (name === 'password') return setForm((f) => ({ ...f, contrasena: value }));
   };
 
-  // ✅ Validación simple en el front
   const validateForm = () => {
     if (!form.nombre.trim()) {
       return 'El nombre de usuario es obligatorio.';
@@ -51,7 +50,6 @@ export default function Register() {
       nav('/');
     } catch (err) {
       console.error('Error en registro:', err);
-      // ✅ Usar el mensaje del backend si existe
       const serverMsg = err?.response?.data?.error;
       setMsg(serverMsg || 'No se pudo registrar. Revisa los datos e inténtalo de nuevo.');
     } finally {

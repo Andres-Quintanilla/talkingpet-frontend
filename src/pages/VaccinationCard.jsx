@@ -16,7 +16,6 @@ const VaccinationCard = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('vacunas');
 
-  // Definición de vacunas obligatorias según especie
   const vacunasObligatorias = {
     perro: [
       { nombre: 'Rabia', obligatoria: true, edadAplicacion: '12-16 semanas' },
@@ -44,7 +43,6 @@ const VaccinationCard = () => {
     try {
       setLoading(true);
       
-      // Obtener datos de la mascota
       const petsResponse = await api.get('/api/medical/mis-mascotas');
       const selectedPet = petsResponse.data.find(p => p.id === parseInt(petId));
       
@@ -55,7 +53,6 @@ const VaccinationCard = () => {
       
       setPet(selectedPet);
 
-      // Obtener expediente completo
       const [vacunasRes, consultasRes, medicamentosRes, alergiasRes] = await Promise.all([
         api.get(`/api/medical/pet/${petId}/vacunas`),
         api.get(`/api/medical/pet/${petId}/consultas`),
@@ -149,7 +146,6 @@ const VaccinationCard = () => {
       />
       
       <div className="vaccination-card-container">
-        {/* Header con info de la mascota */}
         <div className="pet-header">
           <button onClick={() => navigate('/mis-mascotas')} className="btn-back">
             <i className="fas fa-arrow-left"></i> Volver
@@ -171,7 +167,6 @@ const VaccinationCard = () => {
           </div>
         </div>
 
-        {/* Tabs de navegación */}
         <div className="tabs-navigation">
           <button 
             className={`tab-btn ${activeTab === 'vacunas' ? 'active' : ''}`}
@@ -193,14 +188,11 @@ const VaccinationCard = () => {
           </button>
         </div>
 
-        {/* Contenido de los tabs */}
         <div className="tab-content">
           
-          {/* TAB: VACUNAS */}
           {activeTab === 'vacunas' && (
             <div className="vacunas-section">
               
-              {/* Vacunas Obligatorias */}
               <div className="card vacunas-obligatorias">
                 <div className="card-header">
                   <h2><i className="fas fa-shield-virus"></i> Vacunas Obligatorias</h2>
@@ -251,7 +243,6 @@ const VaccinationCard = () => {
                 </div>
               </div>
 
-              {/* Vacunas Opcionales/Futuras */}
               <div className="card vacunas-opcionales">
                 <div className="card-header">
                   <h2><i className="fas fa-calendar-plus"></i> Vacunas Opcionales y Refuerzos</h2>
@@ -299,7 +290,6 @@ const VaccinationCard = () => {
                 </div>
               </div>
 
-              {/* Otras Vacunas Aplicadas */}
               {vacunas.filter(v => !getVacunasObligatorias().some(vo => 
                 v.vacuna.toLowerCase().includes(vo.nombre.toLowerCase())
               )).length > 0 && (
@@ -341,7 +331,6 @@ const VaccinationCard = () => {
             </div>
           )}
 
-          {/* TAB: TRATAMIENTOS */}
           {activeTab === 'tratamientos' && (
             <div className="tratamientos-section">
               
@@ -373,7 +362,6 @@ const VaccinationCard = () => {
                 </div>
               )}
 
-              {/* Medicamentos Activos */}
               <div className="card medicamentos-card">
                 <div className="card-header">
                   <h2><i className="fas fa-pills"></i> Medicamentos Activos</h2>
@@ -408,7 +396,6 @@ const VaccinationCard = () => {
             </div>
           )}
 
-          {/* TAB: HISTORIAL MÉDICO */}
           {activeTab === 'historial' && (
             <div className="historial-section">
               <div className="card consultas-card">

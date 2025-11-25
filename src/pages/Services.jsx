@@ -5,20 +5,18 @@ import api from '../api/axios';
 import { formatCurrency } from '../utils/format';
 
 const serviceIcons = {
-  baño: '🛁',
-  peluqueria: '✂️',
-  veterinaria: '⚕️',
-  adiestramiento: '🎓',
+  baño: '',
+  peluqueria: '',
+  veterinaria: '',
+  adiestramiento: '',
 };
 
 export default function Services() {
   const [servicios, setServicios] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // búsqueda por texto
   const [q, setQ] = useState('');
 
-  // filtros por tipo de servicio
   const [tipos, setTipos] = useState({
     baño: false,
     peluqueria: false,
@@ -43,7 +41,6 @@ export default function Services() {
     fetchServicios();
   }, []);
 
-  // aplica filtros (texto + tipo)
   const filtrados = useMemo(() => {
     const term = q.trim().toLowerCase();
     const activos = Object.entries(tipos)
@@ -84,14 +81,11 @@ export default function Services() {
 
       <div className="services-page">
         <div className="container">
-          {/* usamos el mismo estilo de título que productos */}
           <h1 className="products-page__title">
             Nuestros Servicios Profesionales
           </h1>
 
-          {/* mismo layout que productos: sidebar + listado */}
           <div className="products-page__layout">
-            {/* SIDEBAR DE FILTROS */}
             <aside
               className="sidebar"
               role="complementary"
@@ -133,7 +127,6 @@ export default function Services() {
                   className="btn btn--primary btn--full"
                   type="button"
                   onClick={() => {
-                    // solo resetea a filtros por defecto
                     setQ('');
                     setTipos({
                       baño: false,
@@ -152,7 +145,6 @@ export default function Services() {
               </div>
             </aside>
 
-            {/* LISTADO DE SERVICIOS */}
             <div className="products-content">
               <div className="products-header">
                 <p className="products-header__results">

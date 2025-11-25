@@ -24,7 +24,6 @@ export default function AdminDashboard() {
 
     const load = async () => {
       try {
-        // 🔥 Solo usamos endpoints que sí existen en tu backend v3
         const [
           productsRes,
           servicesRes,
@@ -96,7 +95,6 @@ export default function AdminDashboard() {
 
       {!loading && !error && (
         <div className="admin-dashboard">
-          {/* KPIs */}
           <section className="admin-kpi-grid">
             <article className="admin-kpi-card">
               <p className="admin-kpi-label">Productos activos</p>
@@ -139,9 +137,7 @@ export default function AdminDashboard() {
             </article>
           </section>
 
-          {/* Últimos pedidos + Últimas citas */}
           <section className="admin-dashboard__grid">
-            {/* Últimos pedidos */}
             <article className="admin-panel">
               <header className="admin-panel__header">
                 <h2 className="admin-panel__title">Últimos pedidos</h2>
@@ -176,7 +172,6 @@ export default function AdminDashboard() {
               )}
             </article>
 
-            {/* Últimas citas */}
             <article className="admin-panel">
               <header className="admin-panel__header">
                 <h2 className="admin-panel__title">Últimas citas</h2>

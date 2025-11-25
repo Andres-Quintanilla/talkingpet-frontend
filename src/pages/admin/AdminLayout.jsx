@@ -46,9 +46,6 @@ export default function AdminLayout() {
           <NavLink to="usuarios">
             <Users size={18} /> Usuarios
           </NavLink>
-          <NavLink to="medical">
-            <Heart size={18} /> Hist. Médicos
-          </NavLink>
         </nav>
         <button className="logout-button" onClick={handleLogout}>
           <LogOut size={18} /> Cerrar Sesión

@@ -15,7 +15,6 @@ export default function SEO({
     const siteUrl = url.startsWith('http') ? url : `http://localhost:5173${url}`;
     const imageUrl = image.startsWith('http') ? image : `http://localhost:5173${image}`;
     
-    // Structured Data por defecto (Organization)
     const defaultStructuredData = {
         '@context': 'https://schema.org',
         '@type': 'Organization',
@@ -41,7 +40,6 @@ export default function SEO({
     
     return (
         <Helmet>
-            {/* Basic Meta Tags */}
             <title>{fullTitle}</title>
             <meta name="description" content={description} />
             <meta name="keywords" content={keywords} />
@@ -49,7 +47,6 @@ export default function SEO({
             <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
             <link rel="canonical" href={siteUrl} />
             
-            {/* Open Graph / Facebook */}
             <meta property="og:type" content={type} />
             <meta property="og:title" content={fullTitle} />
             <meta property="og:description" content={description} />
@@ -60,7 +57,6 @@ export default function SEO({
             <meta property="og:site_name" content="TalkingPet" />
             <meta property="og:locale" content={locale} />
             
-            {/* Twitter */}
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />
@@ -68,18 +64,15 @@ export default function SEO({
             <meta name="twitter:site" content="@TalkingPet" />
             <meta name="twitter:creator" content="@TalkingPet" />
             
-            {/* Additional SEO */}
             <meta name="language" content="Spanish" />
             <meta name="revisit-after" content="7 days" />
             <meta name="distribution" content="global" />
             <meta name="rating" content="general" />
             
-            {/* Mobile App */}
             <meta name="apple-mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-status-bar-style" content="default" />
             <meta name="apple-mobile-web-app-title" content="TalkingPet" />
             
-            {/* Structured Data (JSON-LD) */}
             <script type="application/ld+json">
                 {JSON.stringify(structuredData || defaultStructuredData)}
             </script>

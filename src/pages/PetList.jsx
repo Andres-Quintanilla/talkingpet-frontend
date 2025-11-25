@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import SEO from '../components/SEO';
 import { useForm } from 'react-hook-form';
@@ -10,7 +10,7 @@ export default function PetList() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   const {
     register,
@@ -49,8 +49,8 @@ export default function PetList() {
           typeof data.edad === 'number'
             ? data.edad
             : data.edad
-              ? Number(data.edad)
-              : null,
+            ? Number(data.edad)
+            : null,
       };
 
       const { data: nuevaMascota } = await api.post(
@@ -65,8 +65,8 @@ export default function PetList() {
       console.error('Error creando mascota:', err);
       setError(
         err.response?.data?.error ||
-        err.response?.data?.message ||
-        'Error al crear la mascota.'
+          err.response?.data?.message ||
+          'Error al crear la mascota.'
       );
     }
   };
@@ -120,21 +120,34 @@ export default function PetList() {
             <article
               key={pet.id}
               className="pet-card"
-              onClick={() => navigate(`/mis-mascotas/${pet.id}`)}
+              // onClick={() => navigate(`/mis-mascotas/${pet.id}`)}
             >
               <header className="pet-card__header">
                 <div className="pet-card__icon">
-                  {pet.especie === 'perro' ? '🐶' : pet.especie === 'gato' ? '🐱' : '🐾'}
+                  {pet.especie === 'perro'
+                    ? '🐶'
+                    : pet.especie === 'gato'
+                    ? '🐱'
+                    : '🐾'}
                 </div>
                 <h3 className="pet-card__title">{pet.nombre}</h3>
               </header>
 
               <div className="pet-card__body">
-                <p><strong>Raza:</strong> {pet.raza || 'No especificada'}</p>
-                <p><strong>Edad:</strong> {pet.edad ? `${pet.edad} año(s)` : 'No registrada'}</p>
-                <p><strong>Género:</strong> {pet.genero === 'macho' ? 'Macho' : 'Hembra'}</p>
+                <p>
+                  <strong>Raza:</strong> {pet.raza || 'No especificada'}
+                </p>
+                <p>
+                  <strong>Edad:</strong>{' '}
+                  {pet.edad ? `${pet.edad} año(s)` : 'No registrada'}
+                </p>
+                <p>
+                  <strong>Género:</strong>{' '}
+                  {pet.genero === 'macho' ? 'Macho' : 'Hembra'}
+                </p>
               </div>
 
+              {/* 
               <footer className="pet-card__footer">
                 <button
                   type="button"
@@ -158,17 +171,14 @@ export default function PetList() {
                   📋 Cartilla
                 </button>
               </footer>
+              */}
             </article>
           ))}
         </div>
       </div>
 
-
       {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowModal(false)}
-        >
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div
             className="modal-card"
             onClick={(e) => e.stopPropagation()}

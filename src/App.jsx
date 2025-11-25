@@ -1,4 +1,3 @@
-// src/App.jsx
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -84,9 +83,7 @@ export default function App() {
 
       <main className="main" id="main">
         <Routes>
-          {/* ======================= */}
           {/* === Rutas Públicas === */}
-          {/* ======================= */}
           <Route path="/" element={<Home />} />
           <Route path="/productos" element={<Products />} />
           <Route path="/productos/:id" element={<ProductDetail />} />
@@ -94,17 +91,13 @@ export default function App() {
           <Route path="/cursos" element={<Courses />} />
           <Route path="/cursos/:id" element={<CourseDetail />} />
 
-          {/* ======================= */}
           {/* === Autenticación === */}
-          {/* ======================= */}
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Register />} />
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/reset" element={<ResetPassword />} />
 
-          {/* ======================= */}
           {/* === Carrito y Pago === */}
-          {/* ======================= */}
           <Route path="/carrito" element={<Cart />} />
           <Route path="/pago/exitoso" element={<PaymentSuccess />} />
           <Route path="/pago/cancelado" element={<PaymentCancel />} />
@@ -117,9 +110,7 @@ export default function App() {
             }
           />
 
-          {/* ======================= */}
           {/* === Cliente Auth === */}
-          {/* ======================= */}
           <Route
             path="/agendar"
             element={
@@ -193,9 +184,7 @@ export default function App() {
             }
           />
 
-          {/* ======================= */}
           {/* ===== ADMIN AREA ===== */}
-          {/* ======================= */}
           <Route path="/admin/login" element={<AdminLogin />} />
 
           <Route
@@ -214,12 +203,9 @@ export default function App() {
             <Route path="servicios" element={<AdminServices />} />
             <Route path="cursos" element={<AdminCourses />} />
             <Route path="usuarios" element={<AdminUsers />} />
-            <Route path="medical" element={<AdminMedical />} />
           </Route>
 
-          {/* ======================= */}
           {/* ==== EMPLEADO AREA ==== */}
-          {/* ======================= */}
           <Route
             path="/empleado"
             element={
@@ -251,9 +237,7 @@ export default function App() {
             <Route path="adiestramiento" element={<EmployeeTraining />} />
           </Route>
 
-          {/* ======================= */}
           {/* ======== 404 ========= */}
-          {/* ======================= */}
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>

@@ -1,4 +1,3 @@
-// src/pages/CourseDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -25,7 +24,6 @@ export default function CourseDetail() {
       try {
         setLoading(true);
 
-        // 1) Traer el curso
         const { data } = await api.get(`/api/courses/${id}`);
         setCurso(data);
       } catch (err) {
@@ -35,7 +33,6 @@ export default function CourseDetail() {
         return;
       }
 
-      // 2) Si hay usuario, verificar inscripción
       if (user) {
         try {
           const { data: misCursos } = await api.get('/api/courses/mine', {
@@ -61,7 +58,6 @@ export default function CourseDetail() {
   const handleBuyOrEnroll = () => {
     if (!curso) return;
 
-    // Si no está logueado, lo mandamos a login
     if (!user) {
       navigate('/login', { state: { returnTo: `/cursos/${id}` } });
       return;
@@ -69,15 +65,14 @@ export default function CourseDetail() {
 
     setEnrolling(true);
 
-    // Añadir el curso al carrito local
     add(
       {
-        id: `curso-${curso.id}`, // id único dentro del carrito
+        id: `curso-${curso.id}`, 
         nombre: curso.titulo,
         precio: curso.precio ?? 0,
         tipo_item: 'curso',
         imagen_url: curso.portada_url || null,
-        curso_id: curso.id, // para que Checkout sepa que es curso
+        curso_id: curso.id, 
       },
       1
     );
@@ -150,7 +145,6 @@ export default function CourseDetail() {
             {isVirtual ? 'Contenido del Curso' : 'Detalles del Taller'}
           </h2>
 
-          {/* CONTENIDO / DETALLE, SIN VIDEO AQUÍ */}
           {isVirtual ? (
             <div className="course-content-list">
               {contenido.length === 0 && (
@@ -217,7 +211,7 @@ export default function CourseDetail() {
 
         <aside className="course-detail-sidebar">
           <div className="course-buy-box">
-            <div className="course-buy-box__icon">{isVirtual ? '💻' : '🐾'}</div>
+            <div className="course-buy-box__icon">{isVirtual ? '' : ''}</div>
 
             <div className="course-buy-box__price">
               {curso.precio != null ? formatCurrency(curso.precio) : 'Gratis'}

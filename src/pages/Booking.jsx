@@ -1,4 +1,3 @@
-// src/pages/Booking.jsx
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -7,7 +6,6 @@ import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../utils/format';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 
-// Componente hijo para seleccionar ubicación en el mapa
 function LocationPicker({ value, onChange }) {
   const [position, setPosition] = useState(
     value || { lat: -17.7833, lng: -63.1821 }
@@ -31,12 +29,20 @@ function LocationPicker({ value, onChange }) {
   return position ? <Marker position={[position.lat, position.lng]} /> : null;
 }
 
+const ALL_SLOTS = [];
+for (let h = 9; h <= 17; h++) {
+  ['00', '30'].forEach((min) => {
+    ALL_SLOTS.push(`${String(h).padStart(2, '0')}:${min}`);
+  });
+}
+
+const todayStr = new Date().toISOString().slice(0, 10);
+
 export default function Booking() {
   const location = useLocation();
   const navigate = useNavigate();
   const { add } = useCart();
 
-  // 👇 si vienes desde /servicios, acá llega el ID del servicio elegido
   const preselectedServiceId = location.state?.servicioId || null;
 
   const [services, setServices] = useState([]);
@@ -45,7 +51,6 @@ export default function Booking() {
   const [loadingPets, setLoadingPets] = useState(true);
   const [error, setError] = useState('');
 
-  // Estado del formulario
   const [serviceId, setServiceId] = useState(preselectedServiceId);
   const [petSelections, setPetSelections] = useState([{ idMascota: '' }]);
   const [modalidad, setModalidad] = useState('local');
@@ -53,23 +58,19 @@ export default function Booking() {
   const [hora, setHora] = useState('');
   const [comentarios, setComentarios] = useState('');
 
-  // Dirección / ubicación
   const [direccionReferencia, setDireccionReferencia] = useState('');
   const [numeroCasa, setNumeroCasa] = useState('');
   const [manzano, setManzano] = useState('');
   const [ubicacion, setUbicacion] = useState(null);
   const [locating, setLocating] = useState(false);
 
-  // Dirección guardada
   const [savedAddress, setSavedAddress] = useState(null);
-  const [addressMode, setAddressMode] = useState('new'); // 'saved' | 'new'
+  const [addressMode, setAddressMode] = useState('new'); 
 
-  // Disponibilidad (demo)
   const [availability, setAvailability] = useState({
     slots: [],
   });
 
-  // === Cargar servicios ===
   useEffect(() => {
     const loadServices = async () => {
       try {
@@ -92,7 +93,6 @@ export default function Booking() {
     loadServices();
   }, [preselectedServiceId, serviceId]);
 
-  // === Cargar mascotas del usuario ===
   useEffect(() => {
     const loadPets = async () => {
       try {
@@ -111,7 +111,6 @@ export default function Booking() {
     loadPets();
   }, []);
 
-  // === Cargar dirección guardada del cliente (si existe) ===
   useEffect(() => {
     const loadSavedAddress = async () => {
       try {
@@ -141,29 +140,37 @@ export default function Booking() {
     loadSavedAddress();
   }, []);
 
-  // === Disponibilidad horaria demo ===
   useEffect(() => {
     const loadAvailability = async () => {
-      if (!serviceId) return;
+      if (!serviceId || !fecha) {
+        setAvailability({ slots: [] });
+        return;
+      }
+
       try {
-        const demoSlots = [];
-        const startHour = 9;
-        const endHour = 17;
-        for (let h = startHour; h <= endHour; h++) {
-          ['00', '30'].forEach((min) => {
-            const label = `${String(h).padStart(2, '0')}:${min}`;
-            const noDisponiblesDemo = ['12:00', '12:30', '15:30'];
-            const disponible = !noDisponiblesDemo.includes(label);
-            demoSlots.push({ hora: label, disponible });
-          });
-        }
-        setAvailability({ slots: demoSlots });
+        const { data } = await api.get('/api/bookings/availability', {
+          params: {
+            servicio_id: serviceId,
+            fecha,
+            _ts: Date.now(),
+          },
+        });
+
+        const availableSet = new Set(Array.isArray(data) ? data : []);
+
+        const slots = ALL_SLOTS.map((label) => ({
+          hora: label,
+          disponible: availableSet.has(label),
+        }));
+
+        setAvailability({ slots });
       } catch (err) {
         console.error('Error cargando disponibilidad:', err);
+        setAvailability({ slots: [] });
       }
     };
     loadAvailability();
-  }, [serviceId]);
+  }, [serviceId, fecha]);
 
   const selectedService = useMemo(
     () => services.find((s) => String(s.id) === String(serviceId)),
@@ -284,7 +291,6 @@ export default function Booking() {
     const basePrecio = Number(selectedService?.precio_base || 0);
     const totalServicio = basePrecio * mascotasSeleccionadas.length;
 
-    // Guardar/actualizar dirección habitual si no es en local
     if (modalidad !== 'local') {
       try {
         await api.post('/api/customers/service-address', {
@@ -354,7 +360,6 @@ export default function Booking() {
         <section className="booking-section">
           <div className="container">
             <div className="booking-layout">
-              {/* ===== FORMULARIO PRINCIPAL ===== */}
               <div className="booking-form-wrapper">
                 <h1 className="booking-form__title">Agendar Servicio</h1>
                 <p className="booking-form__subtitle">
@@ -366,7 +371,6 @@ export default function Booking() {
                 {error && <p className="form-error">{error}</p>}
 
                 <form className="booking-form" onSubmit={handleSubmit}>
-                  {/* Servicio */}
                   <fieldset className="form-fieldset">
                     <legend className="form-fieldset__legend">1. Servicio</legend>
 
@@ -380,7 +384,6 @@ export default function Booking() {
                         No hay servicios configurados en este momento.
                       </p>
                     ) : preselectedServiceId && selectedService ? (
-                      // 🟢 Caso: vienes desde /servicios con un servicio elegido
                       <div className="form-group">
                         <p className="form-label">Servicio seleccionado</p>
                         <div className="info-box">
@@ -401,7 +404,6 @@ export default function Booking() {
                         </div>
                       </div>
                     ) : (
-                      // 🟠 Caso: entras directo a /agendar → puedes elegir servicio
                       <div className="form-group">
                         <label className="form-label" htmlFor="servicio">
                           Servicio *
@@ -435,7 +437,6 @@ export default function Booking() {
                     )}
                   </fieldset>
 
-                  {/* Mascotas */}
                   <fieldset className="form-fieldset">
                     <legend className="form-fieldset__legend">2. Mascota(s)</legend>
 
@@ -532,7 +533,6 @@ export default function Booking() {
                     )}
                   </fieldset>
 
-                  {/* Modalidad y ubicación */}
                   <fieldset className="form-fieldset">
                     <legend className="form-fieldset__legend">
                       3. Modalidad y ubicación
@@ -728,7 +728,6 @@ export default function Booking() {
                     )}
                   </fieldset>
 
-                  {/* Fecha y hora */}
                   <fieldset className="form-fieldset">
                     <legend className="form-fieldset__legend">
                       4. Fecha y hora
@@ -746,6 +745,7 @@ export default function Booking() {
                           value={fecha}
                           onChange={(e) => setFecha(e.target.value)}
                           required
+                          min={todayStr}
                         />
                         <p className="form-note">
                           En una versión más avanzada, aquí se podrían mostrar en
@@ -798,6 +798,18 @@ export default function Booking() {
                             </button>
                           ))}
                         </div>
+
+                        {availability.slots.length > 0 &&
+                          availability.slots.every((s) => !s.disponible) && (
+                            <p
+                              className="form-error"
+                              style={{ marginTop: '0.5rem' }}
+                            >
+                              No hay horarios disponibles para esta fecha. Elige
+                              otro día.
+                            </p>
+                          )}
+
                         {!hora && (
                           <p className="form-note">
                             Selecciona uno de los horarios disponibles (naranja).
@@ -820,7 +832,6 @@ export default function Booking() {
                     </div>
                   </fieldset>
 
-                  {/* Acciones */}
                   <div className="form-actions">
                     <button
                       type="submit"
@@ -840,7 +851,6 @@ export default function Booking() {
                 </form>
               </div>
 
-              {/* ===== SIDEBAR / RESUMEN ===== */}
               <aside className="booking-sidebar">
                 <div className="info-box">
                   <h2 className="info-box__title">Resumen de tu cita</h2>

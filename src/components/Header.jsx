@@ -113,7 +113,6 @@ export default function Header() {
         </ul>
 
         <ul className="nav__menu nav__menu--utilities">
-          {/* Carrito */}
           <li className="nav__item">
             <NavLink
               to="/carrito"

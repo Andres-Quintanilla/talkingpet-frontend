@@ -1,4 +1,3 @@
-// src/pages/ProductDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -21,7 +20,6 @@ export default function ProductDetail() {
 
   useEffect(() => {
     if (p) {
-      // si no hay stock, cantidad 0, si hay stock empezamos en 1
       setQty(p.stock > 0 ? 1 : 0);
     }
   }, [p]);
@@ -36,17 +34,14 @@ export default function ProductDetail() {
 
     const stock = p.stock || 0;
 
-    // cuánto ya hay de este producto en el carrito
     const existing = items.find((i) => i.id === p.id);
     const currentQty = existing?.qty || 0;
 
     const maxToAdd = stock - currentQty;
     if (maxToAdd <= 0) {
-      // ya está al máximo en el carrito
       return;
     }
 
-    // cantidad que realmente podemos agregar en este click
     const safeQty = Math.min(qty, maxToAdd);
     if (safeQty <= 0) return;
 
@@ -57,7 +52,6 @@ export default function ProductDetail() {
     add(item, safeQty);
   };
 
-  // Structured Data para el producto
   const productStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -126,7 +120,6 @@ export default function ProductDetail() {
 
       <div className="container product-detail">
         <div className="product-detail__layout">
-          {/* Imagen principal */}
           <div className="product-gallery__main">
             <img
               src={imageUrl}
@@ -135,7 +128,6 @@ export default function ProductDetail() {
             />
           </div>
 
-          {/* Info del producto */}
           <div className="product-info">
             <h1 className="product-info__title">{p.nombre}</h1>
 
@@ -145,7 +137,6 @@ export default function ProductDetail() {
               </span>
             </div>
 
-            {/* STOCK */}
             <p
               className={`product-info__stock ${inStock
                   ? 'product-info__stock--available'
@@ -162,7 +153,6 @@ export default function ProductDetail() {
               <p>{p.descripcion || 'Sin descripción.'}</p>
             </div>
 
-            {/* Cantidad + botón */}
             <div className="product-info__purchase">
               <div className="form-group" style={{ maxWidth: 220 }}>
                 <label className="form-label" htmlFor="product-qty">

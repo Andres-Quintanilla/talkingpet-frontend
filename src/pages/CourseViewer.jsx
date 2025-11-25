@@ -5,7 +5,6 @@ import SEO from '../components/SEO';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { PlayCircle, CheckSquare } from 'lucide-react';
-import ReactPlayer from 'react-player';
 
 export default function CourseViewer() {
   const { id } = useParams();
@@ -30,16 +29,15 @@ export default function CourseViewer() {
     // Si viene algo tipo "/uploads/archivo.mp4"
     if (url.startsWith('/')) {
       const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
-      return `${base}${url}`;
+      return `${base.replace(/\/$/, '')}${url}`;
     }
 
     // Si viene "uploads/archivo.mp4" sin slash al inicio
     if (url.startsWith('uploads/')) {
       const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
-      return `${base}/${url}`;
+      return `${base.replace(/\/$/, '')}/${url}`;
     }
 
-    // Cualquier otro caso raro, lo devolvemos igual
     return url;
   };
 
@@ -74,18 +72,39 @@ export default function CourseViewer() {
 
         // 2) Traer la info completa del curso + contenido
         const { data: cursoData } = await api.get(`/api/courses/${numericId}`);
-        setCurso(cursoData);
+
+        // Normalizamos el contenido
+        let contenido = Array.isArray(cursoData.contenido)
+          ? [...cursoData.contenido]
+          : [];
+
+        // Si no hay contenido pero sí tenemos trailer_url,
+        // creamos un "capítulo" virtual con ese video
+        if ((!contenido || contenido.length === 0) && cursoData.trailer_url) {
+          contenido = [
+            {
+              id: 'main-video',
+              tipo: 'video',
+              titulo: cursoData.titulo || 'Video principal',
+              duracion_minutos: cursoData.duracion_minutos || 0,
+              url: cursoData.trailer_url,
+            },
+          ];
+        }
+
+        const cursoFinal = { ...cursoData, contenido };
+        setCurso(cursoFinal);
 
         // 3) Elegir contenido inicial
         let initial = null;
-        if (cursoData.contenido && cursoData.contenido.length > 0) {
+        if (cursoFinal.contenido && cursoFinal.contenido.length > 0) {
           const initialId = location.state?.initialContentId;
           if (initialId) {
             initial =
-              cursoData.contenido.find((x) => x.id === initialId) ||
-              cursoData.contenido[0];
+              cursoFinal.contenido.find((x) => x.id === initialId) ||
+              cursoFinal.contenido[0];
           } else {
-            initial = cursoData.contenido[0];
+            initial = cursoFinal.contenido[0];
           }
         }
         setActiveContent(initial);
@@ -124,10 +143,10 @@ export default function CourseViewer() {
 
   if (!curso) return null;
 
-  // Si hay contenido activo, resolvemos la URL aquí una sola vez
+  // URL del contenido activo
   const activeUrl = activeContent ? resolveContentUrl(activeContent.url) : '';
-  const isYouTube =
-    activeUrl.includes('youtube.com') || activeUrl.includes('youtu.be');
+
+  console.log('[CourseViewer] URL de video activa:', activeUrl);
 
   return (
     <>
@@ -138,6 +157,7 @@ export default function CourseViewer() {
       />
 
       <div className="course-viewer-layout">
+        {/* Sidebar con capítulos */}
         <aside className="course-viewer-sidebar">
           <h2 className="course-viewer-sidebar__title">{curso.titulo}</h2>
           <div className="course-content-list">
@@ -175,59 +195,27 @@ export default function CourseViewer() {
           </div>
         </aside>
 
+        {/* Contenido principal: SOLO el video */}
         <main className="course-viewer-main">
-          {activeContent ? (
+          {activeContent && activeUrl ? (
             <>
               <h1 className="course-viewer-main__title">
                 {activeContent.titulo}
               </h1>
 
-              {activeContent.tipo === 'video' ? (
-                activeUrl ? (
-                  <div className="video-player-wrapper">
-                    {isYouTube ? (
-                      <ReactPlayer
-                        url={activeUrl}
-                        className="react-player"
-                        controls
-                        width="100%"
-                        height="100%"
-                        config={{
-                          youtube: {
-                            playerVars: { showinfo: 1 },
-                          },
-                        }}
-                      />
-                    ) : (
-                      <video
-                        className="react-player"
-                        controls
-                        style={{ width: '100%', height: '100%' }}
-                      >
-                        <source src={activeUrl} type="video/mp4" />
-                        Tu navegador no soporta la reproducción de este video.
-                      </video>
-                    )}
-                  </div>
-                ) : (
-                  <div className="video-player-wrapper-placeholder">
-                    <p>Este contenido no tiene URL de video configurada.</p>
-                  </div>
-                )
-              ) : (
-                <div className="video-player-wrapper-placeholder">
-                  <p>Contenido tipo "{activeContent.tipo}" (ej. PDF).</p>
-                </div>
-              )}
-
-              <div className="course-viewer-main__description">
-                <p>Descripción del video o material (aún no en BD).</p>
+              <div className="video-player-wrapper">
+                <video
+                  src={activeUrl}
+                  controls
+                  style={{ width: '100%', maxHeight: '70vh', background: 'black' }}
+                >
+                  <track kind="captions" />
+                </video>
               </div>
             </>
           ) : (
             <div className="video-player-wrapper-placeholder">
-              <h2>Selecciona un capítulo</h2>
-              <p>Elige un video de la lista para comenzar a aprender.</p>
+              <h2>Este contenido no tiene video configurado.</h2>
             </div>
           )}
         </main>

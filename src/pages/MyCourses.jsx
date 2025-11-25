@@ -1,4 +1,3 @@
-// src/pages/MyCourses.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -13,7 +12,6 @@ export default function MyCourses() {
     const fetchCourses = async () => {
       try {
         setLoading(true);
-        // _ts para evitar caché
         const { data } = await api.get('/api/courses/mine', {
           params: { _ts: Date.now() },
         });
@@ -70,7 +68,6 @@ export default function MyCourses() {
                   const pagado = c.precio_snapshot ?? c.precio;
                   const cursoId = c.curso_id || c.id;
 
-                  // 👇 Intentamos varios nombres de campo para la imagen
                   const thumbnail =
                     c.portada_url ||
                     c.portada ||
@@ -79,7 +76,6 @@ export default function MyCourses() {
 
                   return (
                     <article key={c.id} className="course-card">
-                      {/* Imagen del curso */}
                       <div className="course-card__image-wrapper">
                         <img
                           src={thumbnail}

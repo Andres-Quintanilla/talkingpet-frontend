@@ -43,7 +43,7 @@ export default function PetProfile() {
 
   return (
     <div className="container py-5">
-      <h2 className="mb-3">📋 Cartilla de {mascota.nombre}</h2>
+      <h2 className="mb-3">Cartilla de {mascota.nombre}</h2>
       <p className="text-muted mb-4">
         Aquí verás los datos básicos, vacunas y consultas veterinarias de tu mascota.
       </p>

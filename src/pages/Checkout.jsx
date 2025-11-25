@@ -1,4 +1,3 @@
-// src/pages/Checkout.jsx
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -10,7 +9,6 @@ import api from '../api/axios';
 import { formatCurrency } from '../utils/format';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 
-// ===== Componente hijo para seleccionar ubicación en el mapa (igual que en Booking) =====
 function LocationPicker({ value, onChange }) {
   const [position, setPosition] = useState(
     value || { lat: -17.7833, lng: -63.1821 }
@@ -36,43 +34,38 @@ function LocationPicker({ value, onChange }) {
 
 export default function Checkout() {
   const { items, clear } = useCart();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
 
-  const [metodoPago, setMetodoPago] = useState('efectivo');
+  const [metodoPago, setMetodoPago] = useState('saldo');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [createdOrderId, setCreatedOrderId] = useState(null);
   const [showStripePayment, setShowStripePayment] = useState(false);
 
-  // Dirección habitual guardada (la misma que usas en Booking)
   const [savedAddress, setSavedAddress] = useState(null);
-  const [addressMode, setAddressMode] = useState('saved'); // 'saved' | 'new'
-  const [shippingMode, setShippingMode] = useState('domicilio'); // 'domicilio' | 'tienda'
+  const [addressMode, setAddressMode] = useState('saved');
+  const [shippingMode, setShippingMode] = useState('domicilio'); 
 
-  // Campos de dirección igual que en Booking
   const [direccionReferencia, setDireccionReferencia] = useState('');
   const [numeroCasa, setNumeroCasa] = useState('');
   const [manzano, setManzano] = useState('');
   const [mapPosition, setMapPosition] = useState(null);
   const [locating, setLocating] = useState(false);
 
-  // Cursos del último pedido (para auto-inscripción tras pago con tarjeta/QR)
   const [lastOrderCourseIds, setLastOrderCourseIds] = useState([]);
 
   const subtotal = useMemo(
     () => items.reduce((acc, it) => acc + (it.precio || 0) * (it.qty || 1), 0),
     [items]
   );
-  const shipping = items.length > 0 ? 15 : 0;
+
+  const tieneProductos = items.some((it) => it.tipo_item === 'producto');
+  const tieneServicios = items.some((it) => it.tipo_item === 'servicio');
+
+  const shipping = tieneProductos ? 15 : 0;
   const total = subtotal + shipping;
 
-  const tieneServicios = items.some((it) => it.tipo_item === 'servicio');
-  const tieneProductos = items.some((it) => it.tipo_item === 'producto');
-  const soloCursos =
-    items.length > 0 && items.every((it) => it.tipo_item === 'curso');
-
-  // === Cargar dirección habitual al entrar a Checkout ===
   useEffect(() => {
     const loadSavedAddress = async () => {
       try {
@@ -102,12 +95,11 @@ export default function Checkout() {
       }
     };
 
-    if (!soloCursos) {
+    if (tieneProductos) {
       loadSavedAddress();
     }
-  }, [soloCursos]);
+  }, [tieneProductos]);
 
-  // Helper para auto-inscribir cursos llamando al backend
   const autoEnrollCourses = async (courseIds) => {
     if (!courseIds || courseIds.length === 0) return;
 
@@ -165,7 +157,7 @@ export default function Checkout() {
       }
     }
     if (mode === 'new') {
-      // puedes limpiar si quieres empezar de cero
+      // podrías limpiar si quisieras empezar de cero
       // setDireccionReferencia('');
       // setNumeroCasa('');
       // setManzano('');
@@ -173,7 +165,6 @@ export default function Checkout() {
     }
   };
 
-  // Pago con tarjeta / QR exitoso
   const handlePaymentSuccess = async () => {
     try {
       if (createdOrderId) {
@@ -211,8 +202,7 @@ export default function Checkout() {
       return;
     }
 
-    // Validar dirección cuando NO son solo cursos
-    if (!soloCursos && shippingMode === 'domicilio') {
+    if (tieneProductos && shippingMode === 'domicilio') {
       if (!direccionReferencia.trim()) {
         setError('Por favor indica la referencia de la dirección.');
         return;
@@ -238,16 +228,13 @@ export default function Checkout() {
         detalle_servicio: it.detalle_servicio || null,
       }));
 
-      // ===== Construir dirección final para el pedido =====
       let direccionEnvio = null;
 
-      if (!soloCursos) {
+      if (tieneProductos) {
         if (shippingMode === 'tienda') {
-          // Dirección del local TalkingPet (cámbiala por la real)
           direccionEnvio =
             'Recoger en tienda TalkingPet - Calle Ejemplo #123, Santa Cruz';
         } else {
-          // Entrega a domicilio
           const partes = [
             direccionReferencia || '',
             numeroCasa ? `Casa Nº ${numeroCasa}` : '',
@@ -255,7 +242,6 @@ export default function Checkout() {
           ].filter(Boolean);
           direccionEnvio = partes.join(' - ');
 
-          // Si está usando NUEVA ubicación, la guardamos como habitual
           if (addressMode === 'new') {
             try {
               await api.post('/api/customers/service-address', {
@@ -283,7 +269,17 @@ export default function Checkout() {
 
       const { data } = await api.post('/api/orders', payload);
 
-      // IDs de cursos incluidos en este pedido (sanitizados)
+      if (metodoPago === 'saldo' && updateUser) {
+        try {
+          const { data: freshUser } = await api.get('/api/auth/me', {
+            params: { _ts: Date.now() },
+          });
+          if (freshUser) updateUser(freshUser);
+        } catch (err) {
+          console.error('No se pudo refrescar el usuario tras pagar con saldo', err);
+        }
+      }
+
       const courseIds = normalizedItems
         .filter((it) => it.tipo_item === 'curso')
         .map((it) => Number(it.curso_id || it.id))
@@ -306,7 +302,8 @@ export default function Checkout() {
     } catch (err) {
       console.error('Error creando pedido:', err);
       setError(
-        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+          err?.response?.data?.message ||
           'Ocurrió un error al procesar tu pedido. Intenta nuevamente.'
       );
     } finally {
@@ -330,12 +327,10 @@ export default function Checkout() {
 
       <section className="checkout-section">
         <div className="container checkout-layout">
-          {/* Columna izquierda */}
           <div className="checkout-main">
             {error && <p className="form-error">{error}</p>}
 
             <form onSubmit={handleSubmit} className="checkout-form">
-              {/* 1. Resumen de carrito */}
               <fieldset className="form-fieldset">
                 <legend className="form-fieldset__legend">
                   1. Resumen de carrito
@@ -398,14 +393,12 @@ export default function Checkout() {
                 )}
               </fieldset>
 
-              {/* 2. Dirección de envío + mapa (si NO es solo cursos) */}
-              {!soloCursos && (
+              {tieneProductos && (
                 <fieldset className="form-fieldset">
                   <legend className="form-fieldset__legend">
-                    2. Dirección de envío / servicio
+                    2. Dirección de envío
                   </legend>
 
-                  {/* Modo de entrega: domicilio vs recoger en tienda */}
                   <div className="form-group">
                     <label className="form-label">Forma de entrega</label>
                     <div className="radio-group">
@@ -418,7 +411,7 @@ export default function Checkout() {
                           onChange={() => setShippingMode('domicilio')}
                         />
                         <div>
-                          <strong>Entrega a domicilio / lugar del servicio</strong>
+                          <strong>Entrega a domicilio</strong>
                           <p className="form-note">
                             Usaremos tu ubicación guardada o una nueva dirección.
                           </p>
@@ -449,7 +442,7 @@ export default function Checkout() {
                         Dirección del local TalkingPet
                       </h3>
                       <p className="form-note">
-                        Calle Ejemplo #123, Barrio Central, Santa Cruz.  
+                        Calle Ejemplo #123, Barrio Central, Santa Cruz.
                         (Cambia este texto por la dirección real de tu tienda).
                       </p>
                       <p className="form-note">
@@ -498,7 +491,6 @@ export default function Checkout() {
                         </div>
                       )}
 
-                      {/* Campos de dirección (como en Booking) */}
                       <div className="form-group">
                         <label className="form-label" htmlFor="direccion_ref">
                           Referencia de la dirección *
@@ -509,7 +501,7 @@ export default function Checkout() {
                           placeholder="Ej. Calle 3, casa amarilla, cerca de la plaza..."
                           value={direccionReferencia}
                           onChange={(e) => setDireccionReferencia(e.target.value)}
-                          required
+                          required={shippingMode === 'domicilio'}
                           disabled={addressMode === 'saved'}
                         />
                       </div>
@@ -592,7 +584,6 @@ export default function Checkout() {
                 </fieldset>
               )}
 
-              {/* 3. Método de pago */}
               <fieldset className="form-fieldset">
                 <legend className="form-fieldset__legend">
                   3. Método de pago
@@ -605,13 +596,14 @@ export default function Checkout() {
                     value={metodoPago}
                     onChange={(e) => setMetodoPago(e.target.value)}
                   >
-                    <option value="efectivo">Efectivo</option>
+                    <option value="saldo">
+                      Saldo en cuenta (B/. {Number(user?.saldo || 0).toFixed(2)})
+                    </option>
                     <option value="qr">QR en Bs</option>
                     <option value="tarjeta">Tarjeta (demo)</option>
                   </select>
                 </div>
 
-                {/* Stripe */}
                 {metodoPago === 'tarjeta' &&
                   showStripePayment &&
                   createdOrderId && (
@@ -625,7 +617,6 @@ export default function Checkout() {
                     </div>
                   )}
 
-                {/* QR */}
                 {metodoPago === 'qr' && createdOrderId && (
                   <div style={{ marginTop: '1.5rem' }}>
                     <QrPayment
@@ -669,7 +660,6 @@ export default function Checkout() {
             </form>
           </div>
 
-          {/* Columna derecha: resumen */}
           <aside className="checkout-summary">
             <h2 className="cart-summary__title">Resumen del Pedido</h2>
 

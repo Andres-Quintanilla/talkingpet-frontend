@@ -87,10 +87,7 @@ export default function Login() {
                 {loading ? 'Ingresando…' : 'Ingresar'}
               </button>
             </form>
-
-            <div className="auth-form__link">
-              ¿Olvidaste tu contraseña? <Link to="/forgot">Recuperar</Link>
-            </div>
+            
             <p className="auth-form__link">
               ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
             </p>

@@ -1,26 +1,20 @@
-// src/pages/Cart.jsx
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../utils/format';
 
-// Placeholder SVG por defecto (SIEMPRE disponible)
 const PLACEHOLDER_SVG =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' fill='%23999' dominant-baseline='middle' text-anchor='middle' font-size='10'%3EProducto%3C/text%3E%3C/svg%3E";
 
-// Si más adelante creas imágenes reales en /static, cambias estas rutas.
-// Por ahora las apuntamos al mismo SVG para que no den 404.
 const SERVICE_PLACEHOLDER = PLACEHOLDER_SVG;
 const COURSE_PLACEHOLDER = PLACEHOLDER_SVG;
 
-// Decide qué imagen mostrar según el tipo de item
 function getItemImage(it) {
   if (it.imagen_url) return it.imagen_url;
 
   if (it.tipo_item === 'servicio') return SERVICE_PLACEHOLDER;
   if (it.tipo_item === 'curso') return COURSE_PLACEHOLDER;
 
-  // productos sin imagen
   return PLACEHOLDER_SVG;
 }
 
@@ -82,7 +76,6 @@ export default function Cart() {
                           src={getItemImage(it)}
                           alt={it.nombre}
                           onError={(e) => {
-                            // si falla la ruta (404, CORS, etc.), usamos el SVG
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = PLACEHOLDER_SVG;
                           }}

@@ -1,4 +1,3 @@
-// src/components/StripePayment.jsx
 import { useState } from 'react';
 import api from '../api/axios';
 
@@ -13,7 +12,6 @@ export default function StripePayment({ orderId, total, onError }) {
       });
 
       if (data.url) {
-        // Redirigir a Stripe Checkout
         window.location.href = data.url;
       } else {
         onError('No se pudo crear la sesión de pago');
@@ -52,7 +50,7 @@ export default function StripePayment({ orderId, total, onError }) {
 
       <p className="form-note" style={{ marginTop: '0.5rem', textAlign: 'center' }}>
         <small>
-          🔒 Pago seguro procesado por Stripe
+          Pago seguro procesado por Stripe
         </small>
       </p>
     </div>

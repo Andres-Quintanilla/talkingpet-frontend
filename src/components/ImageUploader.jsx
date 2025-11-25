@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import api from '../api/axios';
 
-export default function ImageUploader({ value, onChange }) {
+export default function ImageUploader({ value, onChange, label = 'Imagen' }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
@@ -25,7 +25,14 @@ export default function ImageUploader({ value, onChange }) {
       });
 
       if (data?.url) {
-        onChange(data.url);
+        let url = data.url;
+
+        if (url && !url.startsWith('http')) {
+          const base = import.meta.env.VITE_API_BASE_URL || '';
+          url = base.replace(/\/$/, '') + url;
+        }
+
+        onChange(url);
       } else {
         setError('El servidor no devolvió la URL de la imagen.');
       }
@@ -65,7 +72,7 @@ export default function ImageUploader({ value, onChange }) {
 
   return (
     <div className="image-uploader">
-      <label className="form-label">Imagen del producto</label>
+      <label className="form-label">{label}</label>
 
       <div
         className="image-uploader__dropzone"
@@ -97,7 +104,7 @@ export default function ImageUploader({ value, onChange }) {
           id="imagen_url"
           type="text"
           className="form-input"
-          placeholder="url de la imagen"
+          placeholder="https://ejemplo.com/imagen.jpg"
           value={value || ''}
           onChange={handleUrlChange}
         />
@@ -112,7 +119,7 @@ export default function ImageUploader({ value, onChange }) {
       {value && (
         <div className="image-uploader__preview">
           <p className="form-note">Vista previa:</p>
-          <img src={value} alt="Vista previa del producto" />
+          <img src={value} alt="Vista previa" />
         </div>
       )}
     </div>

@@ -83,7 +83,6 @@ export default function ChatbotWidget() {
         },
       ]);
 
-      // Ejecutar acciones automáticas si las hay
       if (data.actions && Array.isArray(data.actions)) {
         for (const action of data.actions) {
           await handleAction(action);
@@ -106,10 +105,8 @@ export default function ChatbotWidget() {
   const handleAction = async (action) => {
     if (action.type === 'ADD_TO_CART') {
       try {
-        // Obtener información del producto
         const { data: product } = await api.get(`/api/products/${action.productId}`);
         
-        // Agregar al carrito
         addItem({
           id: product.id,
           nombre: product.nombre,
@@ -118,12 +115,11 @@ export default function ChatbotWidget() {
           tipo_item: 'producto',
         }, action.quantity || 1);
 
-        // Mostrar mensaje de confirmación
         setMessages((prev) => [
           ...prev,
           {
             role: 'system',
-            content: `✅ ${product.nombre} agregado al carrito (${action.quantity || 1}x)`,
+            content: `${product.nombre} agregado al carrito (${action.quantity || 1}x)`,
           },
         ]);
       } catch (error) {
@@ -132,7 +128,7 @@ export default function ChatbotWidget() {
           ...prev,
           {
             role: 'system',
-            content: '❌ No pude agregar el producto al carrito. Intenta nuevamente.',
+            content: 'No pude agregar el producto al carrito. Intenta nuevamente.',
           },
         ]);
       }
@@ -188,7 +184,7 @@ export default function ChatbotWidget() {
 • Horarios y ubicación 📍
 • Métodos de pago 💳
 
-💡 Inicia sesión para ver tu carrito y pedidos personalizados.`;
+Inicia sesión para ver tu carrito y pedidos personalizados.`;
 
     setMessages([
       {
@@ -233,7 +229,6 @@ export default function ChatbotWidget() {
               >
                 <div className="chatbot-message__content">{msg.content}</div>
 
-                {/* Links generados por la IA */}
                 {msg.links && msg.links.length > 0 && (
                   <div className="chatbot-message__links">
                     {msg.links.map((link, linkIdx) => (
@@ -249,7 +244,6 @@ export default function ChatbotWidget() {
                   </div>
                 )}
 
-                {/* Feedback para mensajes del asistente */}
                 {msg.role === 'assistant' && msg.messageId && (
                   <div className="chatbot-message__feedback">
                     <button

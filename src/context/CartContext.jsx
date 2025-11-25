@@ -1,41 +1,35 @@
-// src/context/CartContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { formatCurrency } from '../utils/format';
 import { useAuth } from './AuthContext';
 
-const CartCtx = createContext();
+const CartCtx = createContext(null);
 
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();
 
-  // Clave de storage por usuario (si no hay usuario, carrito anónimo)
   const storageKey = user?.id ? `tp_cart_user_${user.id}` : 'tp_cart_anon';
 
   const [items, setItems] = useState([]);
 
-  // Cargar carrito desde localStorage cuando cambia el usuario / storageKey
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
-
       if (raw) {
         const parsed = JSON.parse(raw);
-
         if (Array.isArray(parsed)) {
           setItems(parsed);
-          return;
+        } else {
+          setItems([]);
         }
+      } else {
+        setItems([]);
       }
-
-      // Si no hay nada guardado o está mal, dejamos carrito vacío
-      setItems([]);
     } catch (err) {
       console.error('Error leyendo carrito de localStorage:', err);
       setItems([]);
     }
   }, [storageKey]);
 
-  // Guardar carrito cuando cambian los items
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(items));
@@ -44,43 +38,87 @@ export const CartProvider = ({ children }) => {
     }
   }, [items, storageKey]);
 
-  // === Mantengo tu misma API ===
-
-  // p: producto completo que ya usas en el proyecto (id, nombre, precio, imagen_url, etc.)
-  // src/context/CartContext.jsx
   const add = (p, qty = 1) => {
     setItems((prev) => {
       const existing = prev.find((x) => x.id === p.id);
 
-      // stock conocido (del producto nuevo o del que ya está en el carrito)
       const stock =
         typeof p.stock === 'number'
           ? p.stock
           : typeof existing?.stock === 'number'
             ? existing.stock
-            : null; // null = sin límite (servicios, cursos, etc.)
+            : null; 
+
+      if (stock !== null && stock <= 0) {
+        return prev;
+      }
+
+      let safeQty = parseInt(qty, 10);
+      if (!Number.isFinite(safeQty) || safeQty <= 0) safeQty = 1;
 
       if (existing) {
         const others = prev.filter((x) => x.id !== p.id);
-        let newQty = existing.qty + qty;
+        let newQty = existing.qty + safeQty;
 
         if (stock !== null) {
           newQty = Math.min(newQty, stock);
         }
 
-        return [...others, { ...existing, ...p, qty: newQty }];
-      }
+        return [
+          ...others,
+          {
+            ...existing,
+            ...p,
+            stock: stock ?? existing.stock,
+            qty: newQty,
+          },
+        ];
+      } else {
+        let initialQty = safeQty;
 
-      // No existía en el carrito
-      let initialQty = qty;
-      if (stock !== null) {
-        initialQty = Math.min(qty, stock);
-      }
+        if (stock !== null) {
+          initialQty = Math.min(initialQty, stock);
+        }
 
-      return [...prev, { ...p, qty: initialQty }];
+        return [
+          ...prev,
+          {
+            ...p,
+            stock,
+            qty: initialQty,
+          },
+        ];
+      }
     });
   };
 
+  const setQty = (id, qty) => {
+    setItems((prev) => {
+      const item = prev.find((x) => x.id === id);
+      if (!item) return prev;
+
+      const stock =
+        typeof item.stock === 'number' ? item.stock : null;
+
+      let newQty = parseInt(qty, 10);
+      if (!Number.isFinite(newQty) || newQty <= 0) newQty = 1;
+
+      if (stock !== null) {
+        if (stock <= 0) {
+          return prev.filter((x) => x.id !== id);
+        }
+        newQty = Math.min(newQty, stock);
+      }
+
+      if (newQty <= 0) {
+        return prev.filter((x) => x.id !== id);
+      }
+
+      return prev.map((x) =>
+        x.id === id ? { ...x, qty: newQty } : x
+      );
+    });
+  };
 
   const remove = (id) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
@@ -88,16 +126,12 @@ export const CartProvider = ({ children }) => {
 
   const clear = () => setItems([]);
 
-  const setQty = (id, qty) => {
-    if (qty <= 0) return remove(id);
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, qty } : i))
-    );
-  };
-
   const totals = useMemo(() => {
-    const total = items.reduce((s, i) => s + (i.precio || 0) * (i.qty || 1), 0);
-    // count = número de líneas, igual que antes
+    const total = items.reduce(
+      (acc, it) => acc + (it.precio || 0) * (it.qty || 1),
+      0
+    );
+
     return {
       total,
       totalLabel: formatCurrency(total),
@@ -106,7 +140,9 @@ export const CartProvider = ({ children }) => {
   }, [items]);
 
   return (
-    <CartCtx.Provider value={{ items, add, remove, clear, setQty, totals }}>
+    <CartCtx.Provider
+      value={{ items, add, remove, clear, setQty, totals }}
+    >
       {children}
     </CartCtx.Provider>
   );

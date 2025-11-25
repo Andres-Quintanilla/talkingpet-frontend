@@ -14,6 +14,17 @@ const EMPTY_FORM = {
   imagen_url: '',
 };
 
+function normalizeCategory(value) {
+  if (!value) return '';
+  return String(value).trim().toLowerCase();
+}
+
+function formatCategoryLabel(value) {
+  const v = normalizeCategory(value);
+  if (!v) return '';
+  return v.charAt(0).toUpperCase() + v.slice(1);
+}
+
 export default function EmployeeProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +35,9 @@ export default function EmployeeProducts() {
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState('');
+
+  const [categories, setCategories] = useState([]);
+  const [newCat, setNewCat] = useState('');
 
   const loadProducts = async () => {
     setLoading(true);
@@ -58,10 +72,38 @@ export default function EmployeeProducts() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const unique = Array.from(
+      new Set(
+        (products || [])
+          .map((p) =>
+            normalizeCategory(p.categoria || p.categoria_nombre || '')
+          )
+          .filter(Boolean)
+      )
+    );
+
+    setCategories((prev) => {
+      const merged = new Set(prev);
+
+      unique.forEach((c) => merged.add(c));
+
+      if (form.categoria && form.categoria.trim()) {
+        merged.add(normalizeCategory(form.categoria));
+      }
+
+      return Array.from(merged).sort((a, b) =>
+        a.localeCompare(b, 'es')
+      );
+    });
+  }, [products, form.categoria]);
+
   const filteredProducts = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return products;
-    return products.filter((p) => (p.nombre || '').toLowerCase().includes(term));
+    return products.filter((p) =>
+      (p.nombre || '').toLowerCase().includes(term)
+    );
   }, [products, search]);
 
   const handleNew = () => {
@@ -77,7 +119,9 @@ export default function EmployeeProducts() {
       descripcion: product.descripcion ?? '',
       precio: product.precio ?? '',
       stock: product.stock ?? '',
-      categoria: product.categoria ?? product.categoria_nombre ?? '',
+      categoria: normalizeCategory(
+        product.categoria ?? product.categoria_nombre ?? ''
+      ),
       estado: product.estado ?? 'borrador',
       es_destacado: Boolean(product.es_destacado),
       imagen_url: product.imagen_url ?? '',
@@ -92,14 +136,36 @@ export default function EmployeeProducts() {
     setEditingId(null);
     setForm(EMPTY_FORM);
     setFormError('');
+    setNewCat('');
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]:
+        name === 'categoria'
+          ? normalizeCategory(value)
+          : type === 'checkbox'
+          ? checked
+          : value,
     }));
+  };
+
+  const handleAddCategory = () => {
+    const norm = normalizeCategory(newCat);
+    if (!norm) return;
+
+    setCategories((prev) => {
+      if (prev.includes(norm)) return prev;
+      return [...prev, norm].sort((a, b) => a.localeCompare(b, 'es'));
+    });
+
+    setForm((prev) => ({
+      ...prev,
+      categoria: norm,
+    }));
+    setNewCat('');
   };
 
   const validateForm = () => {
@@ -131,7 +197,7 @@ export default function EmployeeProducts() {
       descripcion: form.descripcion.trim() || null,
       precio: Number(form.precio),
       stock: Number(form.stock),
-      categoria: form.categoria.trim() || null,
+      categoria: form.categoria ? normalizeCategory(form.categoria) : null,
       estado: form.estado,
       es_destacado: !!form.es_destacado,
       imagen_url: form.imagen_url?.trim() || null,
@@ -176,8 +242,8 @@ export default function EmployeeProducts() {
         <div>
           <h1 className="admin-main__title">Productos</h1>
           <p className="admin-main__subtitle">
-            Como empleado puedes crear, editar y cambiar el estado de los productos.
-            La eliminación solo la realiza un administrador.
+            Como empleado puedes crear, editar y cambiar el estado de los
+            productos. La eliminación solo la realiza un administrador.
           </p>
         </div>
 
@@ -213,7 +279,9 @@ export default function EmployeeProducts() {
       </header>
 
       {loading && (
-        <div className="admin-dashboard__loading">Cargando productos...</div>
+        <div className="admin-dashboard__loading">
+          Cargando productos...
+        </div>
       )}
 
       {error && !loading && (
@@ -283,15 +351,50 @@ export default function EmployeeProducts() {
                   <label className="form-label" htmlFor="categoria">
                     Categoría
                   </label>
-                  <input
+
+                  {/* SELECT DE CATEGORÍAS */}
+                  <select
                     id="categoria"
                     name="categoria"
-                    type="text"
-                    className="form-input"
-                    placeholder="Ej: Innovación, Alimentos..."
+                    className="form-input form-input--select"
                     value={form.categoria}
                     onChange={handleChange}
-                  />
+                  >
+                    <option value="">Sin categoría</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {formatCategoryLabel(cat)}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* CREAR NUEVA CATEGORÍA */}
+                  <div
+                    style={{
+                      marginTop: '0.5rem',
+                      display: 'flex',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Nueva categoría"
+                      value={newCat}
+                      onChange={(e) => setNewCat(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn--secondary"
+                      onClick={handleAddCategory}
+                    >
+                      Añadir
+                    </button>
+                  </div>
+                  <p className="form-note">
+                    Las categorías se guardan en minúsculas para evitar
+                    duplicados (ej: &quot;collar&quot; y &quot;Collar&quot;).
+                  </p>
                 </div>
               </div>
 
@@ -311,8 +414,8 @@ export default function EmployeeProducts() {
                     <option value="publicado">Publicado</option>
                   </select>
                   <p className="form-note">
-                    &quot;Publicado&quot; se mostrará en la tienda, &quot;borrador&quot; solo en el
-                    panel interno.
+                    &quot;Publicado&quot; se mostrará en la tienda,
+                    &quot;borrador&quot; solo en el panel interno.
                   </p>
                 </div>
 
@@ -338,8 +441,8 @@ export default function EmployeeProducts() {
                   Producto destacado
                 </label>
                 <p className="form-note">
-                  Los productos destacados se pueden usar en secciones especiales
-                  del home o de la tienda.
+                  Los productos destacados se pueden usar en secciones
+                  especiales del home o de la tienda.
                 </p>
               </div>
 
@@ -428,21 +531,29 @@ export default function EmployeeProducts() {
                           />
                         )}
                         <div>
-                          <div style={{ fontWeight: 600 }}>{p.nombre}</div>
+                          <div style={{ fontWeight: 600 }}>
+                            {p.nombre}
+                          </div>
                           <div
                             style={{
                               fontSize: '0.8rem',
                               color: 'var(--color-text-light)',
                             }}
                           >
-                            {p.categoria || p.categoria_nombre || 'Sin categoría'}
+                            {formatCategoryLabel(
+                              p.categoria || p.categoria_nombre || ''
+                            ) || 'Sin categoría'}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td>{formatCurrency(Number(p.precio || 0))}</td>
                     <td>{p.stock ?? '-'}</td>
-                    <td>{p.estado === 'publicado' ? 'Publicado' : 'Borrador'}</td>
+                    <td>
+                      {p.estado === 'publicado'
+                        ? 'Publicado'
+                        : 'Borrador'}
+                    </td>
                     <td>{p.es_destacado ? 'Sí' : 'No'}</td>
                     <td>
                       <div className="actions">

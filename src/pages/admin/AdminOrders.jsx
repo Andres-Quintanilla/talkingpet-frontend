@@ -1,4 +1,3 @@
-// src/pages/admin/AdminOrders.jsx
 import { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import { formatCurrency } from '../../utils/format';
@@ -17,7 +16,6 @@ export default function AdminOrders() {
         setLoading(true);
         setError('');
 
-        // Lista de TODOS los pedidos (ruta admin del backend)
         const { data } = await api.get('/api/orders/admin');
         if (!mounted) return;
 

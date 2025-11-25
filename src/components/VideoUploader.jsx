@@ -1,4 +1,3 @@
-// src/components/VideoUploader.jsx
 import { useRef, useState } from 'react';
 import api from '../api/axios';
 
@@ -33,8 +32,6 @@ export default function VideoUploader({ value, onChange, label = 'Video del curs
 
       let url = data.url;
 
-      // Si el backend devuelve ruta relativa (/uploads/xxx),
-      // la convertimos a URL absoluta usando VITE_API_BASE_URL
       if (url && !url.startsWith('http')) {
         const base = import.meta.env.VITE_API_BASE_URL || '';
         url = base.replace(/\/$/, '') + url;
@@ -50,7 +47,6 @@ export default function VideoUploader({ value, onChange, label = 'Video del curs
       );
     } finally {
       setUploading(false);
-      // Limpiar para permitir volver a elegir el mismo archivo
       if (inputRef.current) {
         inputRef.current.value = '';
       }

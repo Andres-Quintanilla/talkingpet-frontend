@@ -1,4 +1,3 @@
-// src/pages/MyOrders.jsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -82,7 +81,6 @@ export default function MyOrders() {
                 !error &&
                 orders.map((order) => (
                   <article key={order.id} className="order-card">
-                    {/* CABECERA DEL PEDIDO */}
                     <header className="order-card__header">
                       <div className="order-card__title-block">
                         <h2 className="order-card__title">
@@ -110,7 +108,6 @@ export default function MyOrders() {
                       </div>
                     </header>
 
-                    {/* LISTA DE ITEMS */}
                     <div className="order-card__body">
                       <div className="order-items-wrapper">
                         <table
@@ -127,7 +124,6 @@ export default function MyOrders() {
                           </thead>
                           <tbody>
                             {(order.items || []).map((it) => {
-                              // Intentamos distintos nombres de campo para la imagen
                               const thumbnail =
                                 it.imagen_url ||
                                 it.imagen ||
@@ -170,7 +166,6 @@ export default function MyOrders() {
                         </table>
                       </div>
 
-                      {/* FOOTER CON RESUMEN (POR SI QUIERES DESTACAR MÁS) */}
                       <div className="order-card__footer">
                         <span className="order-card__footer-label">
                           Total del pedido

@@ -1,4 +1,3 @@
-// src/pages/admin/AdminCourses.jsx
 import { useEffect, useMemo, useState } from 'react';
 import api from '../../api/axios';
 import { formatCurrency } from '../../utils/format';

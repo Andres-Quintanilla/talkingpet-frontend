@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import { useEffect, useState } from 'react';
 import SEO from '../components/SEO';
 import { Link } from 'react-router-dom';
@@ -7,18 +6,17 @@ import ProductCard from '../components/ProductCard';
 import { formatCurrency } from '../utils/format';
 
 const serviceIcons = {
-  baño: '🛁',
-  peluqueria: '✂️',
-  veterinaria: '⚕️',
-  adiestramiento: '🎓',
+  baño: '',
+  peluqueria: '',
+  veterinaria: '',
+  adiestramiento: '',
 };
 
 const courseIcons = {
-  virtual: '💻',
-  presencial: '🎓',
+  virtual: '',
+  presencial: '',
 };
 
-// Testimonios de clientes
 const testimonios = [
   {
     id: 1,
@@ -68,7 +66,6 @@ export default function Home() {
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // índices de carruseles
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [currentService, setCurrentService] = useState(0);
   const [currentProduct, setCurrentProduct] = useState(0);
@@ -116,7 +113,6 @@ export default function Home() {
     })();
   }, []);
 
-  // Carrusel de testimonios
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % testimonios.length);
@@ -124,7 +120,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Carrusel de servicios (auto)
   useEffect(() => {
     if (!servicios.length) return;
     const interval = setInterval(() => {
@@ -133,7 +128,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [servicios.length]);
 
-  // helpers carrusel
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonios.length);
   };
@@ -178,7 +172,6 @@ export default function Home() {
     setCurrentCourse((prev) => (prev - 1 + cursos.length) % cursos.length);
   };
 
-  // visible items (máx 3, sin duplicar cuando hay pocos)
   const getVisibleTriple = (lista, index) => {
     if (lista.length <= 3) return lista;
     return [
@@ -193,7 +186,6 @@ export default function Home() {
   const visibleProducts = getVisibleTriple(destacados, currentProduct);
   const visibleCourses = getVisibleTriple(cursos, currentCourse);
 
-  // Structured Data
   const homeStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -258,7 +250,6 @@ export default function Home() {
         structuredData={homeStructuredData}
       />
 
-      {/* HERO */}
       <section className="hero">
         <div className="hero__decorations">
           <span className="hero__decoration hero__decoration--1">🐾</span>
@@ -290,7 +281,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PRODUCTOS DESTACADOS */}
       <section className="featured-section">
         <div className="container">
           <div className="section-header">
@@ -358,7 +348,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SERVICIOS */}
       <section className="services-section">
         <div className="container">
           <div className="section-header">
@@ -482,7 +471,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PROPUESTA DE VALOR */}
       <section className="value-proposition-section">
         <div className="container">
           <div className="section-header">
@@ -562,7 +550,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TESTIMONIOS */}
       <section className="testimonials-section">
         <div className="container">
           <div className="section-header">
@@ -634,7 +621,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CURSOS */}
       <section className="featured-section">
         <div className="container">
           <h2 className="section-title">Algunos Cursos</h2>

@@ -1,4 +1,3 @@
-// src/pages/PaymentCancelled.jsx
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 

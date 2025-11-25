@@ -1,4 +1,3 @@
-// src/components/QrPayment.jsx
 import { useState, useEffect, useRef } from 'react';
 import api from '../api/axios';
 
@@ -8,7 +7,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
   const [checking, setChecking] = useState(false);
   const intervalRef = useRef(null);
 
-  // Generar el QR
   const handleGenerateQr = async () => {
     setLoading(true);
     try {
@@ -17,7 +15,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
       });
 
       setQrData(data);
-      // Iniciar el polling para verificar el estado del pago
       startPolling(orderId);
     } catch (err) {
       console.error('Error generando QR:', err);
@@ -30,7 +27,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
     }
   };
 
-  // Verificar estado del pago cada 5 segundos
   const startPolling = (orderId) => {
     setChecking(true);
     
@@ -46,10 +42,9 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
       } catch (err) {
         console.error('Error verificando estado:', err);
       }
-    }, 5000); // Verificar cada 5 segundos
+    }, 5000);
   };
 
-  // Simular pago (solo para desarrollo)
   const handleSimulatePayment = async () => {
     try {
       await api.post('/api/payments/qr/simulate', { order_id: orderId });
@@ -62,7 +57,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
     }
   };
 
-  // Limpiar intervalo al desmontar
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -74,7 +68,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
   return (
     <div className="qr-payment-container">
       {!qrData ? (
-        // Mostrar botón para generar QR
         <div className="info-box" style={{ marginBottom: '1rem' }}>
           <h3 className="info-box__title">📱 Pago con QR</h3>
           <p className="form-note">
@@ -85,7 +78,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
           </p>
         </div>
       ) : (
-        // Mostrar QR generado
         <div className="qr-payment-display">
           <div className="info-box" style={{ marginBottom: '1rem', textAlign: 'center' }}>
             <h3 className="info-box__title">📱 Escanea el código QR</h3>
@@ -138,7 +130,6 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
               </div>
             )}
 
-            {/* Botón para simular pago (solo desarrollo) */}
             {import.meta.env.DEV && (
               <button
                 type="button"
@@ -146,7 +137,7 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
                 onClick={handleSimulatePayment}
                 style={{ marginTop: '1rem' }}
               >
-                🧪 Simular pago (Dev)
+                Simular pago (Dev)
               </button>
             )}
           </div>
@@ -166,7 +157,7 @@ export default function QrPayment({ orderId, total, onSuccess, onError }) {
 
       <p className="form-note" style={{ marginTop: '0.5rem', textAlign: 'center' }}>
         <small>
-          🔒 Pago seguro mediante QR
+          Pago seguro mediante QR
         </small>
       </p>
     </div>

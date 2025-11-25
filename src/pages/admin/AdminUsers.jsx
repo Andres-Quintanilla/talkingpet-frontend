@@ -6,9 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 const ROLES = [
   { value: 'cliente', label: 'Cliente' },
   { value: 'admin', label: 'Administrador' },
-  { value: 'empleado', label: 'Empleado' },
+  // { value: 'empleado', label: 'Empleado' }, // ← comentado para que ya no aparezca en el select
 ];
-
 
 const EMPTY_FORM = {
   id: null,
@@ -17,8 +16,8 @@ const EMPTY_FORM = {
   telefono: '',
   rol: 'cliente',
   activo: true,
-  saldo: 0,       
-  saldoActual: 0, 
+  saldo: 0,
+  saldoActual: 0,
 };
 
 export default function AdminUsers() {
@@ -91,8 +90,8 @@ export default function AdminUsers() {
       telefono: u.telefono || '',
       rol: u.rol || 'cliente',
       activo: u.activo ?? true,
-      saldo: 0,                
-      saldoActual: u.saldo ?? 0, 
+      saldo: 0,
+      saldoActual: u.saldo ?? 0,
     });
     setEditingId(u.id);
     setFormError('');
@@ -395,8 +394,8 @@ export default function AdminUsers() {
                   </label>
                   {!editingId && (
                     <p className="form-note">
-                      El usuario nuevo se crea con contraseña por defecto
-                      <strong> 123456</strong> (solo entorno de pruebas).
+                      El usuario nuevo se crea con contraseña por
+                      defecto<strong> 123456</strong> (solo entorno de pruebas).
                     </p>
                   )}
                 </div>
