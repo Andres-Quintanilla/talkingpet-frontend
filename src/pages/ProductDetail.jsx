@@ -9,7 +9,7 @@ import { formatCurrency } from '../utils/format';
 export default function ProductDetail() {
   const { id } = useParams();
   const [p, setP] = useState(null);
-  const { add } = useCart();
+  const { add, items } = useCart();
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
@@ -34,7 +34,20 @@ export default function ProductDetail() {
   const handleAddToCart = () => {
     if (!inStock) return;
 
-    const safeQty = Math.min(qty, p.stock || 0);
+    const stock = p.stock || 0;
+
+    // cuánto ya hay de este producto en el carrito
+    const existing = items.find((i) => i.id === p.id);
+    const currentQty = existing?.qty || 0;
+
+    const maxToAdd = stock - currentQty;
+    if (maxToAdd <= 0) {
+      // ya está al máximo en el carrito
+      return;
+    }
+
+    // cantidad que realmente podemos agregar en este click
+    const safeQty = Math.min(qty, maxToAdd);
     if (safeQty <= 0) return;
 
     const item = {
@@ -69,10 +82,10 @@ export default function ProductDetail() {
     },
     aggregateRating: p.calificacion
       ? {
-          '@type': 'AggregateRating',
-          ratingValue: p.calificacion,
-          reviewCount: p.total_reviews || 1,
-        }
+        '@type': 'AggregateRating',
+        ratingValue: p.calificacion,
+        reviewCount: p.total_reviews || 1,
+      }
       : undefined,
   };
 
@@ -106,9 +119,8 @@ export default function ProductDetail() {
         url={`/productos/${p.id}`}
         image={imageUrl}
         type="product"
-        keywords={`${p.nombre}, ${
-          p.categoria || 'productos mascotas'
-        }, comprar ${p.nombre}, ${p.nombre} Bolivia`}
+        keywords={`${p.nombre}, ${p.categoria || 'productos mascotas'
+          }, comprar ${p.nombre}, ${p.nombre} Bolivia`}
         structuredData={productStructuredData}
       />
 
@@ -135,11 +147,10 @@ export default function ProductDetail() {
 
             {/* STOCK */}
             <p
-              className={`product-info__stock ${
-                inStock
+              className={`product-info__stock ${inStock
                   ? 'product-info__stock--available'
                   : 'product-info__stock--out'
-              }`}
+                }`}
             >
               {inStock
                 ? `Quedan ${p.stock} unidades disponibles`

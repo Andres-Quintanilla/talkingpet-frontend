@@ -101,10 +101,13 @@ export default function Cart() {
                           className="form-input quantity-input"
                           value={it.qty}
                           min={1}
-                          max={99}
+                          max={it.stock || 99}
                           onChange={(e) => {
-                            const val = Number(e.target.value || 1);
-                            if (val >= 1 && val <= 99) setQty(it.id, val);
+                            const max = it.stock || 99;
+                            let val = Number(e.target.value || 1);
+                            if (Number.isNaN(val)) val = 1;
+                            val = Math.max(1, Math.min(max, val));
+                            setQty(it.id, val);
                           }}
                         />
                       </td>

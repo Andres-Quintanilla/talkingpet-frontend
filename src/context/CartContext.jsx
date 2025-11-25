@@ -47,17 +47,40 @@ export const CartProvider = ({ children }) => {
   // === Mantengo tu misma API ===
 
   // p: producto completo que ya usas en el proyecto (id, nombre, precio, imagen_url, etc.)
+  // src/context/CartContext.jsx
   const add = (p, qty = 1) => {
     setItems((prev) => {
-      const i = prev.findIndex((x) => x.id === p.id);
-      if (i >= 0) {
-        const copy = [...prev];
-        copy[i].qty += qty;
-        return copy;
+      const existing = prev.find((x) => x.id === p.id);
+
+      // stock conocido (del producto nuevo o del que ya está en el carrito)
+      const stock =
+        typeof p.stock === 'number'
+          ? p.stock
+          : typeof existing?.stock === 'number'
+            ? existing.stock
+            : null; // null = sin límite (servicios, cursos, etc.)
+
+      if (existing) {
+        const others = prev.filter((x) => x.id !== p.id);
+        let newQty = existing.qty + qty;
+
+        if (stock !== null) {
+          newQty = Math.min(newQty, stock);
+        }
+
+        return [...others, { ...existing, ...p, qty: newQty }];
       }
-      return [...prev, { ...p, qty }];
+
+      // No existía en el carrito
+      let initialQty = qty;
+      if (stock !== null) {
+        initialQty = Math.min(qty, stock);
+      }
+
+      return [...prev, { ...p, qty: initialQty }];
     });
   };
+
 
   const remove = (id) => {
     setItems((prev) => prev.filter((i) => i.id !== id));

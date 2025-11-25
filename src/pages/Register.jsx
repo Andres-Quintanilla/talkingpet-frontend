@@ -4,106 +4,137 @@ import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
-    const [form, setForm] = useState({ nombre: '', email: '', contrasena: '' });
-    const [loading, setLoading] = useState(false);
-    const [msg, setMsg] = useState('');
+  const [form, setForm] = useState({ nombre: '', email: '', contrasena: '' });
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState('');
 
-    const { register } = useAuth();
-    const nav = useNavigate();
+  const { register } = useAuth();
+  const nav = useNavigate();
 
-    const onChange = (e) => {
-        const { name, value } = e.target;
-        if (name === 'Username') return setForm((f) => ({ ...f, nombre: value }));
-        if (name === 'email') return setForm((f) => ({ ...f, email: value }));
-        if (name === 'password') return setForm((f) => ({ ...f, contrasena: value }));
-    };
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'Username') return setForm((f) => ({ ...f, nombre: value }));
+    if (name === 'email') return setForm((f) => ({ ...f, email: value }));
+    if (name === 'password') return setForm((f) => ({ ...f, contrasena: value }));
+  };
 
-    const onSubmit = async (e) => {
-        e.preventDefault();
-        setMsg('');
-        setLoading(true);
-        try {
-            await register(form);
-            nav('/');
-        } catch {
-            setMsg('No se pudo registrar. Intenta de nuevo.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  // ✅ Validación simple en el front
+  const validateForm = () => {
+    if (!form.nombre.trim()) {
+      return 'El nombre de usuario es obligatorio.';
+    }
+    if (!form.email.trim()) {
+      return 'El correo electrónico es obligatorio.';
+    }
+    if (!form.email.includes('@')) {
+      return 'Ingresa un correo electrónico válido.';
+    }
+    if (!form.contrasena || form.contrasena.length < 6) {
+      return 'La contraseña debe tener al menos 6 caracteres.';
+    }
+    return '';
+  };
 
-    return (
-        <>
-            <SEO
-                title="Registro - TalkingPet"
-                description="Crea tu cuenta para comprar productos, agendar servicios y acceder a cursos en TalkingPet."
-                url="http://localhost:5173/registro"
-            />
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setMsg('');
 
-            <main className="main" role="main">
-                <section className="auth-section auth-section--full">
-                    <div className="auth-form-wrapper">
-                        <h1 className="auth-form__title">Crear Cuenta</h1>
+    const validationError = validateForm();
+    if (validationError) {
+      setMsg(validationError);
+      return;
+    }
 
-                        {msg && <p className="form-error" role="alert">{msg}</p>}
+    setLoading(true);
+    try {
+      await register(form);
+      nav('/');
+    } catch (err) {
+      console.error('Error en registro:', err);
+      // ✅ Usar el mensaje del backend si existe
+      const serverMsg = err?.response?.data?.error;
+      setMsg(serverMsg || 'No se pudo registrar. Revisa los datos e inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                        <form className="auth-form" onSubmit={onSubmit} noValidate>
-                            <div className="form-group">
-                                <label htmlFor="Username" className="form-label">Nombre de Usuario</label>
-                                <input
-                                    type="text"
-                                    id="Username"
-                                    name="Username"
-                                    className="form-input"
-                                    placeholder="Nombre de Usuario"
-                                    value={form.nombre}
-                                    onChange={onChange}
-                                    required
-                                    autoComplete="username"
-                                />
-                            </div>
+  return (
+    <>
+      <SEO
+        title="Registro - TalkingPet"
+        description="Crea tu cuenta para comprar productos, agendar servicios y acceder a cursos en TalkingPet."
+        url="http://localhost:5173/registro"
+      />
 
-                            <div className="form-group">
-                                <label htmlFor="email" className="form-label">Correo Electrónico</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    className="form-input"
-                                    placeholder="tu@email.com"
-                                    value={form.email}
-                                    onChange={onChange}
-                                    required
-                                    autoComplete="email"
-                                />
-                            </div>
+      <main className="main" role="main">
+        <section className="auth-section auth-section--full">
+          <div className="auth-form-wrapper">
+            <h1 className="auth-form__title">Crear Cuenta</h1>
 
-                            <div className="form-group">
-                                <label htmlFor="password" className="form-label">Contraseña</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    className="form-input"
-                                    placeholder="Crea una contraseña segura"
-                                    value={form.contrasena}
-                                    onChange={onChange}
-                                    required
-                                    autoComplete="new-password"
-                                />
-                            </div>
+            {msg && <p className="form-error" role="alert">{msg}</p>}
 
-                            <button type="submit" className="btn btn--primary btn--lg btn--full" disabled={loading}>
-                                {loading ? 'Creando cuenta…' : 'Registrarme'}
-                            </button>
-                        </form>
+            <form className="auth-form" onSubmit={onSubmit} noValidate>
+              <div className="form-group">
+                <label htmlFor="Username" className="form-label">Nombre de Usuario</label>
+                <input
+                  type="text"
+                  id="Username"
+                  name="Username"
+                  className="form-input"
+                  placeholder="Nombre de Usuario"
+                  value={form.nombre}
+                  onChange={onChange}
+                  required
+                  autoComplete="username"
+                />
+              </div>
 
-                        <p className="auth-form__link">
-                            ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link>
-                        </p>
-                    </div>
-                </section>
-            </main>
-        </>
-    );
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">Correo Electrónico</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  className="form-input"
+                  placeholder="tu@email.com"
+                  value={form.email}
+                  onChange={onChange}
+                  required
+                  autoComplete="email"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">Contraseña</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  className="form-input"
+                  placeholder="Crea una contraseña segura"
+                  value={form.contrasena}
+                  onChange={onChange}
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn--primary btn--lg btn--full"
+                disabled={loading}
+              >
+                {loading ? 'Creando cuenta…' : 'Registrarme'}
+              </button>
+            </form>
+
+            <p className="auth-form__link">
+              ¿Ya tienes una cuenta? <Link to="/login">Inicia sesión</Link>
+            </p>
+          </div>
+        </section>
+      </main>
+    </>
+  );
 }
